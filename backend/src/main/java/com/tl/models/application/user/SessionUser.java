@@ -1,6 +1,6 @@
-package com.tl.beans.user;
+package com.tl.models.application.user;
 
-import com.tl.beans.game.GameSession;
+import com.tl.models.application.game.GameSessionContext;
 
 import lombok.*;
 
@@ -12,9 +12,9 @@ import lombok.*;
 @ToString
 @Data
 public class SessionUser extends User {
-    private GameSession session;
+    private GameSessionContext session;
 
-    public SessionUser(GameSession session, String username) {
+    public SessionUser(GameSessionContext session, String username) {
         super(username);
         this.session = session;
     }

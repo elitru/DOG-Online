@@ -1,4 +1,4 @@
-package com.tl.beans.game;
+package com.tl.models.application.game;
 
 import java.util.Optional;
 

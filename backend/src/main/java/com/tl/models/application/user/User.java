@@ -1,4 +1,4 @@
-package com.tl.beans.user;
+package com.tl.models.application.user;
 
 import java.util.UUID;
 
