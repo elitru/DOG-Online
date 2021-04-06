@@ -14,6 +14,10 @@ public abstract class GameState {
         throw new BadRequestException(BAD_STATE);
     }
 
+    public SessionUser addUserToSession(GameSessionContext context, String userName, String password) {
+        throw new BadRequestException(BAD_STATE);
+    }
+
     public void removeUserFromSession(GameSessionContext context) {
         throw new BadRequestException(BAD_STATE);
     }

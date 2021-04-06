@@ -7,23 +7,19 @@ import lombok.Data;
 import lombok.NoArgsConstructor;
 import lombok.ToString;
 
-import java.util.Optional;
+import java.util.UUID;
 
 @Data
 @NoArgsConstructor
 @AllArgsConstructor
 @ToString
-public class CreateSessionRequest {
+public class JoinSessionRequest {
     @JsonProperty
     @Required
     public String userName;
     @JsonProperty
     @Required
-    public String sessionName;
+    public UUID sessionId;
     @JsonProperty
     public String password;
-    @JsonProperty
-    @Required
-    public Boolean publicSession;
 }
-

@@ -11,7 +11,7 @@ import java.util.UUID;
 @NoArgsConstructor
 @Data
 @ToString
-public class CreateSessionResponse {
+public class JoinSessionResponse {
     private UUID sessionId;
     private UUID userId;
 }

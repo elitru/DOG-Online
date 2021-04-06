@@ -29,4 +29,19 @@ public class LobbyState extends GameState {
         return newUser;
     }
 
+    /**
+     * This method tries to add a new user to the current session; provided that the password matches
+     * @param context The context of the current session
+     * @param userName The new username
+     * @param password The password to check
+     * @return The ID of the newly created user
+     */
+    @Override
+    public SessionUser addUserToSession(GameSessionContext context, String userName, String password) {
+        if (password.equals(context.getPassword())) {
+            throw new BadRequestException();
+        }
+        return this.addUserToSession(context, userName);
+    }
+
 }

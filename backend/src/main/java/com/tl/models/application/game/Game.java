@@ -7,4 +7,6 @@ import java.util.Map;
 
 public class Game {
     private Map<SessionUser, List<NinePin>> ninepins;
+    public static final int MIN_PLAYERS = 2;
+    public static final int MAX_PLAYERS = 8;
 }
