@@ -6,6 +6,23 @@ import java.lang.reflect.Field;
 public class Validation {
 
     /**
+     * This method checks whether any of the given objects is null
+     * @param obj object to be checked
+     * @param params optional objects to to be checked as well
+     */
+    public static void checkForNull(Object obj, Object... params) {
+        if(obj == null) {
+            throw new BadRequestException();
+        }
+
+        for(Object object : params) {
+            if(object == null) {
+                throw new BadRequestException();
+            }
+        }
+    }
+
+    /**
      * This method checks whether all @Required-Annotated fields are in fact not null.
      * @param instance  The instance to check
      * @param <T> The class of the instance to check

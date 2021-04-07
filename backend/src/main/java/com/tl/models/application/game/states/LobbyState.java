@@ -2,8 +2,11 @@ package com.tl.models.application.game.states;
 
 import com.tl.models.application.game.GameSessionContext;
 import com.tl.models.application.user.SessionUser;
+import org.jboss.resteasy.spi.NotImplementedYetException;
 
 import javax.ws.rs.BadRequestException;
+import javax.ws.rs.core.NewCookie;
+import java.util.Objects;
 import java.util.UUID;
 
 public class LobbyState extends GameState {
@@ -38,10 +41,28 @@ public class LobbyState extends GameState {
      */
     @Override
     public SessionUser addUserToSession(GameSessionContext context, String userName, String password) {
-        if (password.equals(context.getPassword())) {
+        if (!Objects.equals(password, context.getPassword())) {
             throw new BadRequestException();
         }
         return this.addUserToSession(context, userName);
     }
 
+    /**
+     * This method removes a given user from the current session.
+     * @param context The context of the current session
+     * @param userId The user to remove
+     */
+    @Override
+    public void removeUserFromSession(GameSessionContext context, UUID userId) {
+        context.getClients().remove(userId);
+
+        if(userId.equals(context.getOwner().getId())) {
+            // select new owner
+            if(context.getClients().size() == 0) {
+                return;
+            }
+            context.setOwner(context.getClients().get(0));
+            // TODO: send message to web sockets
+        }
+    }
 }

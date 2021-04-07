@@ -4,6 +4,8 @@ import com.tl.models.application.game.GameSessionContext;
 
 import lombok.*;
 
+import javax.websocket.Session;
+
 /**
  * Representing a user who is connected to a given session
  * 
@@ -13,6 +15,7 @@ import lombok.*;
 @Data
 public class SessionUser extends User {
     private GameSessionContext session;
+    private Session websocketSession;
 
     public SessionUser(GameSessionContext session, String username) {
         super(username);

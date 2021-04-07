@@ -18,7 +18,7 @@ public abstract class GameState {
         throw new BadRequestException(BAD_STATE);
     }
 
-    public void removeUserFromSession(GameSessionContext context) {
+    public void removeUserFromSession(GameSessionContext context, UUID userId) {
         throw new BadRequestException(BAD_STATE);
     }
 

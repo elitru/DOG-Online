@@ -43,14 +43,33 @@ public class SessionService {
 
     }
 
-    public GameSessionContext joinSession(JoinSessionRequest request) {
-        var context = this.sessions.get(request.getSessionId());
-        if (context == null)
-                throw new NotFoundException();
+    public SessionUser joinSession(JoinSessionRequest request) {
+        var context = getSessionContext(request.sessionId);
+
         if (context.getClients().size() == Game.MAX_PLAYERS) {
             throw new BadRequestException();
         }
-        context.getState().addUserToSession(context, request.userName, request.password);
+        return context.getState().addUserToSession(context, request.userName, request.password);
+    }
+
+    public void quitSession(UUID sessionId, UUID userId) {
+        var context = getSessionContext(sessionId);
+
+        context.getState().removeUserFromSession(context, userId);
+
+        if(context.getClients().size() == 0) {
+            this.sessions.remove(sessionId);
+        }
+    }
+
+    public GameSessionContext getContextById(UUID sessionId) {
+        return this.sessions.get(sessionId);
+    }
+
+    private GameSessionContext getSessionContext(UUID sessionId) {
+        var context = this.sessions.get(sessionId);
+        if (context == null)
+            throw new NotFoundException();
         return context;
     }
 }

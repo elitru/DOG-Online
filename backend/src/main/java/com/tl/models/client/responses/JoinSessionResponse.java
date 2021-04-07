@@ -1,17 +1,17 @@
 package com.tl.models.client.responses;
 
+import com.fasterxml.jackson.annotation.JsonProperty;
+import com.tl.validation.Required;
 import lombok.AllArgsConstructor;
 import lombok.Data;
 import lombok.NoArgsConstructor;
 import lombok.ToString;
 
-import java.util.UUID;
-
-@AllArgsConstructor
-@NoArgsConstructor
 @Data
+@NoArgsConstructor
+@AllArgsConstructor
 @ToString
 public class JoinSessionResponse {
-    private UUID sessionId;
-    private UUID userId;
+    @JsonProperty
+    public String url;
 }
