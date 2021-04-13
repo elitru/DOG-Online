@@ -69,7 +69,7 @@ public class GameSocketResource {
         System.out.println("new message: " + message.toString());
     }
 
-    private static void makeGameBroadcast(GameSessionContext context, Message message) {
+    public static void makeGameBroadcast(GameSessionContext context, Message message) {
         context.getClients()
                 .values()
                 .stream()
