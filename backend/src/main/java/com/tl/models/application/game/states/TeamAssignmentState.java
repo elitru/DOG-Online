@@ -2,24 +2,40 @@ package com.tl.models.application.game.states;
 
 import com.tl.models.application.game.GameSessionContext;
 import com.tl.models.application.game.Team;
+import com.tl.models.application.game.ws_messages.messages.StateChangedMessage;
 import com.tl.models.application.user.SessionUser;
+import com.tl.resources.GameSocketResource;
 
+import javax.websocket.Session;
 import javax.ws.rs.BadRequestException;
 import java.util.*;
 import java.util.stream.Collectors;
 
 public class TeamAssignmentState extends GameState {
+    
     public TeamAssignmentState(GameSessionContext context) {
+        super(context);
+
         Map<Integer, Team> teams = new HashMap<>();
-        teams.put(0, new Team(0, new ArrayList<>(context.getClients().values())));
+        teams.put(0, new Team(0, new ArrayList<>(this.context.getClients().values())));
 
-        addEmptyTeams(context.getClients().size() / (teamsSupported(context) ? 2 : 1), teams);
+        addEmptyTeams(this.context.getClients().size() / (teamsSupported() ? 2 : 1), teams);
 
-        context.getGame().setTeams(teams);
+        this.context.getGame().setTeams(teams);
     }
 
-    public boolean teamsSupported(GameSessionContext context) {
-        return context.getClients().size() % 2 == 0;
+    public void sendWSInitMessage() {
+        var message = new StateChangedMessage(GameStateIdentifier.TeamAssignment, null);
+        GameSocketResource.makeGameBroadcast(context, message);
+    }
+
+    private List<SessionUser> getNextUnassigned(int amount) {
+        var players = context.getGame().getTeams().get(0).getMembers().subList(0, amount);
+        for (int i = 0; i < amount; i++) {
+            context.getGame().getTeams().get(0).getMembers().remove(0);
+        }
+
+        return players;
     }
 
     private static void addEmptyTeams(int maxMembers, Map<Integer, Team> teams) {
@@ -28,8 +44,12 @@ public class TeamAssignmentState extends GameState {
         }
     }
 
-    public void joinTeam(GameSessionContext context, int target, SessionUser user) {
-        if (!teamsSupported(context)) {
+    public boolean teamsSupported() {
+        return this.context.getClients().size() % 2 == 0;
+    }
+
+    public void joinTeam(int target, SessionUser user) {
+        if (!teamsSupported()) {
             return;
         }
         var currentTeam = context.getGame().getTeamForUser(user).orElseThrow(BadRequestException::new);
@@ -41,22 +61,18 @@ public class TeamAssignmentState extends GameState {
         targetTeam.addUserToTeam(user);
     }
 
-    private List<SessionUser> getNextUnassigned(int amount, GameSessionContext context) {
-
-        var players = context.getGame().getTeams().get(0).getMembers().subList(0, amount);
-        for (int i = 0; i < amount; i++) {
-            context.getGame().getTeams().get(0).getMembers().remove(0);
-        }
-        
-        return players;
+    public void removeUserFromSession(UUID userId) {
+        var lobbyState = new LobbyState(context);
+        lobbyState.removeUserFromSession(userId);
+        context.setState(lobbyState);
     }
 
-    public void finish(GameSessionContext context) {
-        if (teamsSupported(context)) {
+    public void finish() {
+        if (teamsSupported()) {
             var availableTeams = context.getGame().getTeams().values().stream().filter(t -> !t.isFull()).collect(Collectors.toList());
             for (Team t : availableTeams) {
-                var nextPlayers = getNextUnassigned(t.remainingCapacity(), context);
-                t.getMembers().addAll(nextPlayers);
+                var nextPlayers = getNextUnassigned(t.remainingCapacity());
+                nextPlayers.forEach(t::addUserToTeam);
             }
         } else {
             int currentTeam = 1;

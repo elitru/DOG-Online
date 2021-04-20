@@ -10,15 +10,25 @@ import java.util.UUID;
 public abstract class GameState {
     private static final String BAD_STATE = "This operation is not possible in the current game state.";
 
-    public SessionUser addUserToSession(GameSessionContext context, String userName) {
+    protected GameSessionContext context;
+
+    public GameState(GameSessionContext context) {
+        this.context = context;
+    }
+
+    public SessionUser addUserToSession(String userName) {
         throw new BadRequestException(BAD_STATE);
     }
 
-    public SessionUser addUserToSession(GameSessionContext context, String userName, String password) {
+    public SessionUser addUserToSession(String userName, String password) {
         throw new BadRequestException(BAD_STATE);
     }
 
-    public void removeUserFromSession(GameSessionContext context, UUID userId) {
+    public void removeUserFromSession(UUID userId) {
+        throw new BadRequestException(BAD_STATE);
+    }
+
+    public void joinTeam(int target, SessionUser user) {
         throw new BadRequestException(BAD_STATE);
     }
 
@@ -26,4 +36,5 @@ public abstract class GameState {
         return context.getClients().values().stream().filter(u -> u.getUsername().equals(userName)).findFirst();
     }
 
+    public abstract void sendWSInitMessage();
 }

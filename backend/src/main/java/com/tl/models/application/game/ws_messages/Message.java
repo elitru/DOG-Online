@@ -8,7 +8,6 @@ import com.tl.models.application.game.ws_messages.message_type.MessageTypeDeseri
 import com.tl.models.application.game.ws_messages.message_type.MessageTypeSerializer;
 import lombok.ToString;
 
-@ToString
 public abstract class Message {
     @JsonProperty
     @JsonDeserialize(using = MessageTypeDeserializer.class)

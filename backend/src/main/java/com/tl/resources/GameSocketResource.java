@@ -4,8 +4,9 @@ import com.tl.models.application.game.GameSessionContext;
 import com.tl.models.application.game.ws_messages.Message;
 import com.tl.models.application.game.ws_messages.MessageDecoder;
 import com.tl.models.application.game.ws_messages.MessageEncoder;
-import com.tl.models.application.game.ws_messages.messages.UserJoinedMessage;
+import com.tl.models.application.game.ws_messages.messages.UserUpdateMessage;
 import com.tl.models.application.user.SessionUser;
+import com.tl.models.application.user.User;
 import com.tl.services.SessionService;
 
 import javax.enterprise.context.ApplicationScoped;
@@ -14,7 +15,9 @@ import javax.websocket.*;
 import javax.websocket.server.PathParam;
 import javax.websocket.server.ServerEndpoint;
 import java.io.IOException;
+import java.util.ArrayList;
 import java.util.UUID;
+import java.util.stream.Collectors;
 
 @ServerEndpoint(
         value = "/game/{sessionId}/{userId}",
@@ -37,8 +40,10 @@ public class GameSocketResource {
 
     @OnOpen
     public void onOpen(Session session, @PathParam("sessionId") String sessionId, @PathParam("userId") String userId) {
-        var context = sessionService.getContextById(UUID.fromString(sessionId));
+        var context = sessionService.getSessionOrThrow(UUID.fromString(sessionId));
         var user = context.getClients().get(UUID.fromString(userId));
+        System.out.println("here -> " + user);
+        System.out.println("here -> " + context);
 
         if(user == null) {
             try {
@@ -48,19 +53,24 @@ public class GameSocketResource {
             }
         }
 
-        // send message to all users that a new user has joined
-        makeGameBroadcast(context, new UserJoinedMessage(user.getId(), user.getUsername()));
         // add client session to game user
         user.setWebsocketSession(session);
+        // send message to all users that a new user has joined
+        makeGameBroadcast(context, new UserUpdateMessage(context.getClients().values().stream().map(SessionUser::toBaseUser).collect(Collectors.toList())));
     }
 
     @OnClose
     public void onClose(Session session, @PathParam("sessionId") String sessionId, @PathParam("userId") String userId) {
-
+            System.out.println("close");
+        var context = sessionService.getSessionOrThrow(UUID.fromString(sessionId));
+        sessionService.quitSession(UUID.fromString(sessionId), UUID.fromString(userId));
+        makeGameBroadcast(context, new UserUpdateMessage(new ArrayList<>(context.getClients().values())));
     }
 
     @OnError
     public void onError(Session session, @PathParam("sessionId") String sessionId, @PathParam("userId") String userId, Throwable throwable) {
+        System.out.println("hello from error fuck");
+        throwable.printStackTrace();
         this.onClose(session, sessionId, userId);
     }
 

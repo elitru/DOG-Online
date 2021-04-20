@@ -11,15 +11,12 @@ import javax.websocket.Session;
  * 
  * @author Elias Trummer, Martin Linhard
  */
-@ToString
 @Data
 public class SessionUser extends User {
-    private GameSessionContext session;
     private Session websocketSession;
 
-    public SessionUser(GameSessionContext session, String username) {
+    public SessionUser(String username) {
         super(username);
-        this.session = session;
     }
 
     @Override
@@ -30,5 +27,9 @@ public class SessionUser extends User {
     @Override
     public int hashCode() {
         return super.hashCode();
+    }
+
+    public User toBaseUser() {
+        return new User(this.getId(), this.getUsername());
     }
 }

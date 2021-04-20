@@ -29,16 +29,20 @@ public class SessionService {
         this.sessions = new HashMap<>();
     }
 
+    public GameSessionContext getSessionOrThrow(UUID sessionId) {
+        return Optional.ofNullable(this.sessions.get(sessionId)).orElseThrow(BadRequestException::new);
+    }
+
     public GameSessionContext createSession(CreateSessionRequest request) {
         var context = new GameSessionContext();
 
-        context.setState(new LobbyState());
+        context.setState(new LobbyState(context), false);
         context.setSessionId(UUID.randomUUID());
         context.setSessionName(request.getSessionName());
         context.setPublicSession(request.getPublicSession());
         context.setPassword(request.getPassword());
 
-        var newUser = context.getState().addUserToSession(context, request.getUserName());
+        var newUser = context.getState().addUserToSession(request.getUserName());
         context.setOwner(newUser);
 
         this.sessions.put(context.getSessionId(), context);
@@ -48,37 +52,33 @@ public class SessionService {
     }
 
     public SessionUser joinSession(JoinSessionRequest request) {
-        var context = getSessionContext(request.sessionId);
+        System.out.println(request);
+        var context = getSessionOrThrow(request.sessionId);
 
         if (context.getClients().size() == Game.MAX_PLAYERS) {
             throw new BadRequestException();
         }
-        return context.getState().addUserToSession(context, request.userName, request.password);
+        return context.getState().addUserToSession(request.userName, request.password);
     }
 
     public void quitSession(UUID sessionId, UUID userId) {
-        var context = getSessionContext(sessionId);
+        var context = getSessionOrThrow(sessionId);
 
-        context.getState().removeUserFromSession(context, userId);
+        context.getState().removeUserFromSession(userId);
 
         if (context.getClients().size() == 0) {
             this.sessions.remove(sessionId);
         }
     }
 
-    public GameSessionContext getContextById(UUID sessionId) {
-        return this.sessions.get(sessionId);
-    }
-
-    private GameSessionContext getSessionContext(UUID sessionId) {
-        var context = this.sessions.get(sessionId);
-        if (context == null)
-            throw new NotFoundException();
-        return context;
+    public void joinTeam(UUID sessionId, UUID userId, int teamId) {
+        var session = this.getSessionOrThrow(sessionId);
+        var user = session.getUser(userId).orElseThrow(BadRequestException::new);
+        session.getState().joinTeam(teamId, user);
     }
 
     public void advanceStateForSession(UUID sessionId, UUID userId) {
-        var session = Optional.ofNullable(this.sessions.get(sessionId)).orElseThrow(BadRequestException::new);
+        var session = this.getSessionOrThrow(sessionId);
         if (!userId.equals(session.getOwner().getId())) {
             throw new UnauthorizedException();
         }
@@ -86,7 +86,7 @@ public class SessionService {
     }
 
     public void advanceStateForSession(UUID sessionId) {
-        var session = Optional.ofNullable(this.sessions.get(sessionId)).orElseThrow(BadRequestException::new);
+        var session = this.getSessionOrThrow(sessionId);
         this.advanceStateForSession(session);
     }
 

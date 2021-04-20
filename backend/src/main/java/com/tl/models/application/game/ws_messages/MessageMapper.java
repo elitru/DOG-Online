@@ -2,7 +2,8 @@ package com.tl.models.application.game.ws_messages;
 
 import com.fasterxml.jackson.databind.ObjectMapper;
 import com.tl.models.application.game.ws_messages.message_type.MessageType;
-import com.tl.models.application.game.ws_messages.messages.UserJoinedMessage;
+import com.tl.models.application.game.ws_messages.messages.StateChangedMessage;
+import com.tl.models.application.game.ws_messages.messages.UserUpdateMessage;
 import lombok.SneakyThrows;
 
 import java.util.Arrays;
@@ -15,13 +16,19 @@ public class MessageMapper {
         MessageType messageType = Arrays.stream(MessageType.values()).filter(type -> type.getId() == messageTypeId).findFirst().orElseThrow();
 
         switch(messageType) {
-            case UserJoined:
-                var parsed = mapper.readValue(json, UserJoinedMessage.class);
-                System.out.println(parsed);
+            case UserUpdate: {
+                var parsed = mapper.readValue(json, UserUpdateMessage.class);
                 return parsed;
+            }
+
+            case StateChanged: {
+                var parsed = mapper.readValue(json, StateChangedMessage.class);
+                return parsed;
+            }
 
             default:
                 return null;
         }
     }
 }
+

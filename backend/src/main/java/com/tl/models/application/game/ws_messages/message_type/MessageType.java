@@ -1,7 +1,8 @@
 package com.tl.models.application.game.ws_messages.message_type;
 
 public enum MessageType {
-    UserJoined(0);
+    UserUpdate(0),
+    StateChanged(1);
 
     private final int id;
 
