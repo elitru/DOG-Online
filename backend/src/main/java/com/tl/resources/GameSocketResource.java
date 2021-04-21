@@ -42,8 +42,6 @@ public class GameSocketResource {
     public void onOpen(Session session, @PathParam("sessionId") String sessionId, @PathParam("userId") String userId) {
         var context = sessionService.getSessionOrThrow(UUID.fromString(sessionId));
         var user = context.getClients().get(UUID.fromString(userId));
-        System.out.println("here -> " + user);
-        System.out.println("here -> " + context);
 
         if(user == null) {
             try {
@@ -61,7 +59,6 @@ public class GameSocketResource {
 
     @OnClose
     public void onClose(Session session, @PathParam("sessionId") String sessionId, @PathParam("userId") String userId) {
-            System.out.println("close");
         var context = sessionService.getSessionOrThrow(UUID.fromString(sessionId));
         sessionService.quitSession(UUID.fromString(sessionId), UUID.fromString(userId));
         makeGameBroadcast(context, new UserUpdateMessage(new ArrayList<>(context.getClients().values())));
@@ -69,7 +66,6 @@ public class GameSocketResource {
 
     @OnError
     public void onError(Session session, @PathParam("sessionId") String sessionId, @PathParam("userId") String userId, Throwable throwable) {
-        System.out.println("hello from error fuck");
         throwable.printStackTrace();
         this.onClose(session, sessionId, userId);
     }

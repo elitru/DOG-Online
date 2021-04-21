@@ -1,12 +1,13 @@
 package com.tl.models.application.game.states;
 
+import com.tl.models.application.game.Game;
 import com.tl.models.application.game.GameSessionContext;
 import com.tl.models.application.game.Team;
 import com.tl.models.application.game.ws_messages.messages.StateChangedMessage;
+import com.tl.models.application.game.ws_messages.messages.UserChangeTeamMessage;
 import com.tl.models.application.user.SessionUser;
 import com.tl.resources.GameSocketResource;
 
-import javax.websocket.Session;
 import javax.ws.rs.BadRequestException;
 import java.util.*;
 import java.util.stream.Collectors;
@@ -21,7 +22,12 @@ public class TeamAssignmentState extends GameState {
 
         addEmptyTeams(this.context.getClients().size() / (teamsSupported() ? 2 : 1), teams);
 
-        this.context.getGame().setTeams(teams);
+        this.context.setGame(new Game(null, teams));
+
+        if (!this.teamsSupported()) {
+            this.finish();
+            // TODO set next state
+        }
     }
 
     public void sendWSInitMessage() {
@@ -49,6 +55,7 @@ public class TeamAssignmentState extends GameState {
     }
 
     public void joinTeam(int target, SessionUser user) {
+        System.out.println(this.context.getGame().getTeams());
         if (!teamsSupported()) {
             return;
         }
@@ -59,6 +66,9 @@ public class TeamAssignmentState extends GameState {
         }
         currentTeam.removeUserFromTeam(user);
         targetTeam.addUserToTeam(user);
+
+        // notify clients that a user has switched teams
+        GameSocketResource.makeGameBroadcast(context, new UserChangeTeamMessage(user.getId(), targetTeam.getTeamId(), currentTeam.getTeamId()));
     }
 
     public void removeUserFromSession(UUID userId) {
@@ -81,5 +91,6 @@ public class TeamAssignmentState extends GameState {
                 currentTeam++;
             }
         }
+        System.out.println(this.context.getGame().getTeams());
     }
 }

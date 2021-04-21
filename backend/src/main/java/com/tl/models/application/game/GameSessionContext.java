@@ -28,7 +28,7 @@ public class GameSessionContext {
     private SessionUser owner;
 
     public Optional<SessionUser> getUser(UUID userId) {
-        return clients.values().stream().filter(u -> u.getUsername().equals(userId)).findFirst();
+        return clients.values().stream().filter(u -> u.getId().equals(userId)).findFirst();
     }
 
     public void setState(GameState state) {

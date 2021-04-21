@@ -52,7 +52,6 @@ public class SessionService {
     }
 
     public SessionUser joinSession(JoinSessionRequest request) {
-        System.out.println(request);
         var context = getSessionOrThrow(request.sessionId);
 
         if (context.getClients().size() == Game.MAX_PLAYERS) {
@@ -93,6 +92,10 @@ public class SessionService {
     public void advanceStateForSession(GameSessionContext context) {
         var state = context.getState();
         if (state instanceof LobbyState) {
+            // make sure that we have at least 3 players
+            if (context.getClients().size() < Game.MIN_PLAYERS) {
+                throw new BadRequestException();
+            }
             context.setState(new TeamAssignmentState(context));
         } else {
             // TODO implement switch to other states

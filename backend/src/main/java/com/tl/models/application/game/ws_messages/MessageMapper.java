@@ -3,6 +3,7 @@ package com.tl.models.application.game.ws_messages;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import com.tl.models.application.game.ws_messages.message_type.MessageType;
 import com.tl.models.application.game.ws_messages.messages.StateChangedMessage;
+import com.tl.models.application.game.ws_messages.messages.UserChangeTeamMessage;
 import com.tl.models.application.game.ws_messages.messages.UserUpdateMessage;
 import lombok.SneakyThrows;
 
@@ -23,6 +24,10 @@ public class MessageMapper {
 
             case StateChanged: {
                 var parsed = mapper.readValue(json, StateChangedMessage.class);
+                return parsed;
+            }
+            case UserTeamChangedUpdate: {
+                var parsed = mapper.readValue(json, UserChangeTeamMessage.class);
                 return parsed;
             }
 
