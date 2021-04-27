@@ -1,3 +1,14 @@
 <div id="create-lobby">
-    
+    <div class="left">
+        <h1 class="tremble-sometimes">Dog <br>Online</h1>
+        <h3>Das Spiel, das dein Blut zum Kochen bringt!</h3>
+    </div>
+    <div class="right">
+        <h2>Spiel erstellen</h2>
+        <app-input title="Lobby Name" placeholder="Lobby 1" width="100%"></app-input>
+        <app-input title="Passwort" placeholder="●●●●●●●●●●●●" type="password" width="100%"></app-input>
+        <app-button title="Lobby erstellen" (click)="onCreateSession()">
+            <i class="fad fa-play"></i>
+        </app-button>
+    </div>
 </div>

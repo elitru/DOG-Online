@@ -1,0 +1,6 @@
+<div class="input" style="width: {{width}};" [ngClass]="{'disabled': disabled}">
+    <span class="title">
+        {{ title }}
+    </span>
+    <input type="text" placeholder="{{placeholder}}" (change)="onChange()" [(ngModel)]="value" type="{{type}}" [disabled]="disabled">
+</div>

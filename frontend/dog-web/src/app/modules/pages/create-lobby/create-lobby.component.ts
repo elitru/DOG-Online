@@ -1,4 +1,5 @@
 import { Component, OnInit } from '@angular/core';
+import { LoaderService } from 'src/app/provider/loader.service';
 
 @Component({
   selector: 'app-create-lobby',
@@ -7,9 +8,14 @@ import { Component, OnInit } from '@angular/core';
 })
 export class CreateLobbyComponent implements OnInit {
 
-  constructor() { }
+  constructor(public loaderService: LoaderService) { }
 
   public ngOnInit(): void {
-  
+    
+  }
+
+  // Events
+  public async onCreateSession(): Promise<void> {
+    this.loaderService.setLoading(true);
   }
 }
