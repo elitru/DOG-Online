@@ -8,6 +8,8 @@ import { CreateLobbyComponent } from './modules/pages/create-lobby/create-lobby.
 import { InputComponent } from './modules/shared/input/input.component';
 import { ButtonComponent } from './modules/shared/button/button.component';
 import { LoaderComponent } from './modules/shared/loader/loader.component';
+import { TwoSelectComponent } from './modules/shared/two-select/two-select.component';
+import { JoinLobbyComponent } from './modules/pages/join-lobby/join-lobby.component';
 
 @NgModule({
   declarations: [
@@ -15,7 +17,9 @@ import { LoaderComponent } from './modules/shared/loader/loader.component';
     CreateLobbyComponent,
     InputComponent,
     ButtonComponent,
-    LoaderComponent
+    LoaderComponent,
+    TwoSelectComponent,
+    JoinLobbyComponent
   ],
   imports: [
     BrowserModule,

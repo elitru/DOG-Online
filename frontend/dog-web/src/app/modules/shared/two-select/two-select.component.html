@@ -1,0 +1,8 @@
+<div class="two-select" style="width: {{ width }};">
+    <div class="item" *ngFor="let item of values" 
+         style="width: {{ 100 / values.length }}%;" 
+         [ngClass]="{ 'active': value === item }"
+         (click)="onSelect(item)">
+        {{ item }}
+    </div>
+</div>

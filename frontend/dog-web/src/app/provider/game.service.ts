@@ -20,6 +20,6 @@ export class GameService {
       publicSession
     };
 
-    return this.httpClient.post(ApiRoutes.Session.Create, payload).toPromise();
+    return this.httpClient.post(ApiRoutes.Session.Create, payload).toPromise() as Promise<SessionCreateResponse>;
   }
 }

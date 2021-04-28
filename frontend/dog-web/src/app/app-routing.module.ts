@@ -1,6 +1,7 @@
 import { NgModule } from '@angular/core';
 import { RouterModule, Routes } from '@angular/router';
 import { CreateLobbyComponent } from './modules/pages/create-lobby/create-lobby.component';
+import { JoinLobbyComponent } from './modules/pages/join-lobby/join-lobby.component';
 
 const routes: Routes = [
   {
@@ -11,6 +12,10 @@ const routes: Routes = [
   {
     path: 'create',
     component: CreateLobbyComponent
+  },
+  {
+    path: 'join/:sessionId/:lobbyName',
+    component: JoinLobbyComponent
   }
 ];
 

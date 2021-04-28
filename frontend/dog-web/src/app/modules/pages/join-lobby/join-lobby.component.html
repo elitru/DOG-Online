@@ -1,0 +1,14 @@
+<div id="join-lobby">
+    <div class="left">
+        <h1 class="tremble-sometimes">Dog <br>Online</h1>
+        <h3>Das Spiel, das dein Blut zum Kochen bringt!</h3>
+    </div>
+    <div class="right">
+        <h2>Spiel beitreten</h2>
+        <app-input title="Lobby Name" placeholder="Lobby 1" width="100%" [disabled]="true" value="{{lobby}}"></app-input>
+        <app-input title="Passwort" placeholder="●●●●●●●●●●●●" type="password" width="100%" [(value)]="password"></app-input>
+        <app-button title="Spiel beitreten" (click)="onCreateSession()">
+            <i class="fad fa-play"></i>
+        </app-button>
+    </div>
+</div>

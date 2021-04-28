@@ -1,0 +1,30 @@
+@import './../../../../styles.styl'
+
+.two-select
+    position relative
+    background white
+    border-radius item-radius
+    border solid 5px blue_dark
+    font-size item-font-size
+    display flex
+    justify-content space-between
+    align-items stretch
+    align-content stretch
+    flex-direction row
+
+    .item
+        margin 10px 10px 10px 0px
+        color blue
+        border-radius 8px
+        padding 6px 20px
+        text-align center
+        cursor pointer
+        font-weight 700
+        transition all 300ms
+
+        &:first-child
+            margin-left 10px
+
+    .active
+        background red
+        color white
