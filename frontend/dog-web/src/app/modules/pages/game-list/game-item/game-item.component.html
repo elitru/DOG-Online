@@ -1,0 +1,5 @@
+<div class="item" [routerLink]="['/join', this.game.sessionId, this.game.name]">
+    <span>{{ game.name }}</span>
+    <i class="fas fa-lock-alt pw" *ngIf="game.hasPassword"></i>
+    <i class="fas fa-lock-open-alt" *ngIf="!game.hasPassword"></i>
+</div>

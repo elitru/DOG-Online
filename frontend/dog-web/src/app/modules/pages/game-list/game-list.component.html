@@ -1,0 +1,26 @@
+<div id="list">
+    <div class="left">
+        <h1 class="tremble-sometimes">Dog <br>Online</h1>
+        <h3>Das Spiel, das dein Blut zum Kochen bringt!</h3>
+    </div>
+    <div class="right">
+        <div class="title" [ngClass]="{ 'has-search': search }">
+            <h2>Öffentliche Spiele</h2>
+            <div id="search" *ngIf="search">
+                <app-input width="100%" title="Suche" placeholder="Spiel 1" [(value)]="searchValue"></app-input>
+            </div>
+            <button class="search" (click)="onToggleSearch()">
+                <i class="fas fa-search" *ngIf="!search"></i>
+                <i class="fas fa-times" *ngIf="search"></i>
+            </button>
+        </div>
+        <div class="games">
+            <ng-container *ngIf="games.length > 0">
+                <app-game-item *ngFor="let game of filteredGames" [game]="game"></app-game-item>
+            </ng-container>
+            <div class="no-games" *ngIf="games.length === 0">
+                Keine öffentlichen Spiele...
+            </div>
+        </div>
+    </div>
+</div>

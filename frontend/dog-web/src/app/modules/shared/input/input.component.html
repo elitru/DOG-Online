@@ -2,5 +2,5 @@
     <span class="title">
         {{ title }}
     </span>
-    <input type="text" placeholder="{{placeholder}}" (change)="onChange()" [(ngModel)]="value" type="{{type}}" [disabled]="disabled">
+    <input type="text" placeholder="{{placeholder}}" (input)="onChange()" [(ngModel)]="value" type="{{type}}" [disabled]="disabled">
 </div>

@@ -1,0 +1,36 @@
+@import './../../../../../styles.styl'
+
+.item
+    width 100%
+    height auto
+    padding 16px 30px
+    background white
+    border solid 6px blue_dark
+    display flex
+    align-content center
+    align-items center
+    justify-content space-between
+    border-radius item-radius
+    overflow hidden
+    transition all 300ms
+    cursor pointer
+
+    &:hover
+        border-color red
+        transform scale(1.025)
+
+        span
+            color red
+
+    span
+        font-size 24px
+        font-weight bold
+        color blue
+        transition all 300ms
+
+    i
+        font-size 30px
+        color #04B274
+
+    .pw
+        color red

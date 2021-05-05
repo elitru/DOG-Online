@@ -10,6 +10,8 @@ import { ButtonComponent } from './modules/shared/button/button.component';
 import { LoaderComponent } from './modules/shared/loader/loader.component';
 import { TwoSelectComponent } from './modules/shared/two-select/two-select.component';
 import { JoinLobbyComponent } from './modules/pages/join-lobby/join-lobby.component';
+import { GameListComponent } from './modules/pages/game-list/game-list.component';
+import { GameItemComponent } from './modules/pages/game-list/game-item/game-item.component';
 
 @NgModule({
   declarations: [
@@ -19,7 +21,9 @@ import { JoinLobbyComponent } from './modules/pages/join-lobby/join-lobby.compon
     ButtonComponent,
     LoaderComponent,
     TwoSelectComponent,
-    JoinLobbyComponent
+    JoinLobbyComponent,
+    GameListComponent,
+    GameItemComponent
   ],
   imports: [
     BrowserModule,
