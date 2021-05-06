@@ -5,9 +5,10 @@
     </div>
     <div class="right">
         <h2>Spiel erstellen</h2>
-        <app-input title="Lobby Name" placeholder="Lobby 1" width="100%"></app-input>
-        <app-input title="Passwort" placeholder="●●●●●●●●●●●●" type="password" width="100%"></app-input>
-        <app-two-select width="100%" [values]="['Öffentlich', 'Privat']"></app-two-select>
+        <app-input title="Lobby Name" placeholder="Lobby 1" width="100%" [(value)]="lobbyName"></app-input>
+        <app-input title="Passwort" placeholder="●●●●●●●●●●●●" type="password" width="100%" [(value)]="password"></app-input>
+        <app-input title="Username" placeholder="GameMaster123" width="100%" [(value)]="userName"></app-input>
+        <app-two-select width="100%" [values]="['Öffentlich', 'Privat']" [(value)]="type"></app-two-select>
         <app-button title="Lobby erstellen" (click)="onCreateSession()">
             <i class="fad fa-play"></i>
         </app-button>

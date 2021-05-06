@@ -1,0 +1,51 @@
+@import './../../../../styles.styl'
+
+#lobby
+    display flex
+    flex-direction row
+    align-items center
+    align-content center
+    justify-content flex-start
+
+    .right
+        width 45%
+        max-width 700px
+
+        .title
+            width 100%
+            display flex
+            flex-direction row
+            align-items center
+            align-content center
+            justify-content space-between
+
+        .players
+            overflow auto
+            max-height 700px
+            margin-top 50px
+            width 100%
+            padding 30px
+            background white
+            border solid 6px blue_dark
+            border-radius item-radius
+            display flex
+            flex-direction column
+            gap 15px
+            -ms-overflow-style none
+            scrollbar-width none
+
+            &::-webkit-scrollbar
+                display none
+
+            .player
+                width 100%
+                border solid 4px blue
+                border-radius 10px
+                font-size 20px
+                padding 12px 20px
+                color blue
+                font-weight bold
+                background #eee
+
+        .start
+            margin-top 50px

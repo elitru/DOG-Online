@@ -1,3 +1,5 @@
 export interface SessionCreateResponse {
-    url: string
+    readonly url: string;
+    readonly sessionId: string;
+    readonly userId: string;
 }

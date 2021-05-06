@@ -1,6 +1,8 @@
 import { Component, OnInit } from '@angular/core';
-import { ActivatedRoute } from '@angular/router';
+import { ActivatedRoute, Router } from '@angular/router';
+import { GameService } from 'src/app/provider/game.service';
 import { LoaderService } from 'src/app/provider/loader.service';
+import { SocketService } from 'src/app/provider/socket.service';
 
 @Component({
   selector: 'app-join-lobby',
@@ -9,11 +11,29 @@ import { LoaderService } from 'src/app/provider/loader.service';
 })
 export class JoinLobbyComponent implements OnInit {
   public sessionId: string = '';
-  public lobby: string = 'Lobby';
+  public lobby: string = '';
   public password: string = '';
+  public userName: string = '';
 
   constructor(private loaderService: LoaderService,
-              private route: ActivatedRoute) { }
+              private router: Router,
+              private socketService: SocketService,
+              private gameService: GameService,
+              private route: ActivatedRoute) {
+    this.loaderService.setLoading(true);
+
+    this.route.params.subscribe(params => {
+      this.sessionId = params['sessionId'];
+      this.lobby = params['lobbyName'];
+
+      if(!this.lobby || !this.sessionId) {
+        this.router.navigateByUrl('/create');
+        return;
+      }
+
+      this.loaderService.setLoading(true);
+    });
+  }
 
   public ngOnInit(): void {
     this.loaderService.setLoading(true);
@@ -26,7 +46,18 @@ export class JoinLobbyComponent implements OnInit {
   }
 
   // Events
-  public async onCreateSession(): Promise<void> {
+  public async onJoinSession(): Promise<void> {
     this.loaderService.setLoading(true);
+
+    try {
+      const { url } = await this.gameService.joinSession(this.userName, this.sessionId, this.password, this.lobby);
+      this.socketService.connect(url);
+      this.router.navigateByUrl('/lobby');
+    }catch(err) {
+      console.log(err);
+      alert('An errors occured');
+    }
+
+    this.loaderService.setLoading(false);
   }
 }

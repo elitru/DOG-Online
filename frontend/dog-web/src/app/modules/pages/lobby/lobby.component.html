@@ -1,0 +1,20 @@
+<div id="lobby" class="background">
+    <div class="left">
+        <h1 class="tremble-sometimes">Dog <br>Online</h1>
+        <h3>Das Spiel, das dein Blut zum Kochen bringt!</h3>
+    </div>
+    <div class="right">
+        <div class="title">
+            <h2>Teilnehmer</h2>
+            <app-button width="100%" (click)="copyLink()" title="Link kopieren"></app-button>
+        </div>
+        <div class="players">
+            <section class="player" *ngFor="let user of gameService.users$ | async">
+                {{ user.username }}
+            </section>
+        </div>
+        <div class="start" *ngIf="gameService.isOwner">
+            <app-button title="Runde starten" (click)="onStartGame()" [disabled]="!canStart"></app-button>
+        </div>
+    </div>
+</div>

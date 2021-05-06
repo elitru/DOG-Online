@@ -15,9 +15,6 @@ export class ButtonComponent implements OnInit {
   @Input()
   public width: string = '100%';
 
-  @Output()
-  public click = new EventEmitter<void>();
-
   constructor() { }
 
   public ngOnInit(): void {

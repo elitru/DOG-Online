@@ -4,3 +4,9 @@ export interface SessionCreateRequest {
     password: string | null,
     publicSession: boolean,
 }
+
+export interface SessionJoinRequest {
+    userName: string,
+    sessionId: string,
+    password: string | null,
+}

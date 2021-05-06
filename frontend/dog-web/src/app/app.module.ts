@@ -12,6 +12,9 @@ import { TwoSelectComponent } from './modules/shared/two-select/two-select.compo
 import { JoinLobbyComponent } from './modules/pages/join-lobby/join-lobby.component';
 import { GameListComponent } from './modules/pages/game-list/game-list.component';
 import { GameItemComponent } from './modules/pages/game-list/game-item/game-item.component';
+import { LobbyComponent } from './modules/pages/lobby/lobby.component';
+import { CookieService } from 'ngx-cookie-service';
+import { TeamChooserComponent } from './modules/pages/team-chooser/team-chooser.component';
 
 @NgModule({
   declarations: [
@@ -23,7 +26,9 @@ import { GameItemComponent } from './modules/pages/game-list/game-item/game-item
     TwoSelectComponent,
     JoinLobbyComponent,
     GameListComponent,
-    GameItemComponent
+    GameItemComponent,
+    LobbyComponent,
+    TeamChooserComponent
   ],
   imports: [
     BrowserModule,
@@ -31,7 +36,7 @@ import { GameItemComponent } from './modules/pages/game-list/game-item/game-item
     FormsModule,
     HttpClientModule
   ],
-  providers: [],
+  providers: [ CookieService ],
   bootstrap: [AppComponent]
 })
 export class AppModule { }

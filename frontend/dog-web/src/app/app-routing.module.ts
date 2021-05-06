@@ -3,6 +3,8 @@ import { RouterModule, Routes } from '@angular/router';
 import { CreateLobbyComponent } from './modules/pages/create-lobby/create-lobby.component';
 import { GameListComponent } from './modules/pages/game-list/game-list.component';
 import { JoinLobbyComponent } from './modules/pages/join-lobby/join-lobby.component';
+import { LobbyComponent } from './modules/pages/lobby/lobby.component';
+import { TeamChooserComponent } from './modules/pages/team-chooser/team-chooser.component';
 
 const routes: Routes = [
   {
@@ -17,6 +19,14 @@ const routes: Routes = [
   {
     path: 'games',
     component: GameListComponent
+  },
+  {
+    path: 'lobby',
+    component: LobbyComponent
+  },
+  {
+    path: 'teams',
+    component: TeamChooserComponent
   },
   {
     path: 'join/:sessionId/:lobbyName',

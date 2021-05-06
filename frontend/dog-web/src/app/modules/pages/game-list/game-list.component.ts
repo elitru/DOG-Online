@@ -30,7 +30,7 @@ export class GameListComponent implements OnInit {
     if (event.key === 'Escape' && this.search) {
         this.onToggleSearch();
     }
-}
+  }
 
   public onToggleSearch(): void {
     if(this.search) {

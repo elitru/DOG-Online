@@ -4,7 +4,6 @@ import { MessageTypeDTO } from '../models/websockets/dto/message-type.dto';
 import { StateChangedMessageDTO } from '../models/websockets/dto/state-changed-message.dto';
 import { UserTeamChangeMessageDTO } from '../models/websockets/dto/user-team-change-message.dto';
 import { UserUpdateMessageDTO } from '../models/websockets/dto/user-update-message.dto';
-import { Message } from '../models/websockets/message';
 import { StateChangedMessage } from '../models/websockets/state-changed-message';
 import { UserTeamChangeMessage } from '../models/websockets/user-team-change-message';
 import { UserUpdateMessage } from '../models/websockets/user-update-message';

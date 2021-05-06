@@ -7,7 +7,8 @@
         <h2>Spiel beitreten</h2>
         <app-input title="Lobby Name" placeholder="Lobby 1" width="100%" [disabled]="true" value="{{lobby}}"></app-input>
         <app-input title="Passwort" placeholder="●●●●●●●●●●●●" type="password" width="100%" [(value)]="password"></app-input>
-        <app-button title="Spiel beitreten" (click)="onCreateSession()">
+        <app-input title="Username" placeholder="GameMaster123" width="100%" [(value)]="userName"></app-input>
+        <app-button title="Spiel beitreten" (click)="onJoinSession()">
             <i class="fad fa-play"></i>
         </app-button>
     </div>
