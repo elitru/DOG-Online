@@ -35,7 +35,7 @@ public class GameSocketResource {
     SessionService sessionService;
 
     public static String getUrlForUserAndSession(UUID sessionId, UUID userId) {
-        return String.format("ws://localhost:8080/game/%s/%s", sessionId, userId);
+        return String.format("ws://80.109.218.245:8080/game/%s/%s", sessionId, userId);
     }
 
     @OnOpen
@@ -61,7 +61,7 @@ public class GameSocketResource {
     public void onClose(Session session, @PathParam("sessionId") String sessionId, @PathParam("userId") String userId) {
         var context = sessionService.getSessionOrThrow(UUID.fromString(sessionId));
         sessionService.quitSession(UUID.fromString(sessionId), UUID.fromString(userId));
-        makeGameBroadcast(context, new UserUpdateMessage(new ArrayList<>(context.getClients().values())));
+        makeGameBroadcast(context, new UserUpdateMessage(context.getClients().values().stream().map(SessionUser::toBaseUser).collect(Collectors.toList())));
     }
 
     @OnError

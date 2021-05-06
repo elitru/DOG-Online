@@ -7,6 +7,8 @@ import lombok.Data;
 import lombok.NoArgsConstructor;
 import lombok.ToString;
 
+import java.util.UUID;
+
 @Data
 @NoArgsConstructor
 @AllArgsConstructor
@@ -14,4 +16,8 @@ import lombok.ToString;
 public class JoinSessionResponse {
     @JsonProperty
     public String url;
+    @JsonProperty
+    public UUID sessionId;
+    @JsonProperty
+    public UUID userId;
 }

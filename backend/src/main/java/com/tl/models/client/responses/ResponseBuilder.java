@@ -17,6 +17,8 @@ public class ResponseBuilder {
                 .expires(Date.from(Instant.now().plus(Duration.ofMinutes(60 * 5))))
                 .cookie(newCookie("userId", userId.toString()))
                 .cookie(newCookie("sessionId", sessionId.toString()))
+                .header("Access-Control-Allow-Origin", "*")
+                .header("Allow-Origin-With-Credentials", "*")
                 .build();
     }
 

@@ -18,7 +18,7 @@ public class GameResource {
     @Consumes(MediaType.APPLICATION_JSON)
     @Produces(MediaType.APPLICATION_JSON)
     @Path("/next")
-    public void nextState(@CookieParam("sessionId") String sessionId, @CookieParam("userId") String userId) {
+    public void nextState(@HeaderParam("sessionId") String sessionId, @HeaderParam("userId") String userId) {
         this.sessionService.advanceStateForSession(UUID.fromString(sessionId), UUID.fromString(userId));
     }
 }

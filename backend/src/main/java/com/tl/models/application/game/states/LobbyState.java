@@ -67,7 +67,7 @@ public class LobbyState extends GameState {
             if(context.getClients().size() == 0) {
                 return;
             }
-            context.setOwner(context.getClients().get(0));
+            context.setOwner(context.getClients().values().stream().findFirst().get());
             // TODO: send message to web sockets
         }
     }

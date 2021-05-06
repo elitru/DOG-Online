@@ -25,23 +25,21 @@ public class SessionResource {
     @Consumes(MediaType.APPLICATION_JSON)
     @Produces(MediaType.APPLICATION_JSON)
     @Path("/create")
-    public Response createSession(CreateSessionRequest request) {
+    public JoinSessionResponse createSession(CreateSessionRequest request) {
         Validation.checkForNull(request);
         var session = this.sessionService.createSession(request);
 
-        var body = new JoinSessionResponse(GameSocketResource.getUrlForUserAndSession(session.getSessionId(), session.getOwner().getId()));
-        return ResponseBuilder.build(body, session.getSessionId(), session.getOwner().getId());
+        return new JoinSessionResponse(GameSocketResource.getUrlForUserAndSession(session.getSessionId(), session.getOwner().getId()), session.getSessionId(), session.getOwner().getId());
     }
 
     @POST
     @Consumes(MediaType.APPLICATION_JSON)
     @Produces(MediaType.APPLICATION_JSON)
     @Path("/join")
-    public Response joinSession(JoinSessionRequest request) {
+    public JoinSessionResponse joinSession(JoinSessionRequest request) {
         Validation.checkForNull(request);
         var sessionUser = this.sessionService.joinSession(request);
-        var body = new JoinSessionResponse(GameSocketResource.getUrlForUserAndSession(request.getSessionId(), sessionUser.getId()));
-        return ResponseBuilder.build(body, request.getSessionId(), sessionUser.getId());
+        return new JoinSessionResponse(GameSocketResource.getUrlForUserAndSession(request.getSessionId(), sessionUser.getId()), request.getSessionId(), sessionUser.getId());
     }
 
 }
