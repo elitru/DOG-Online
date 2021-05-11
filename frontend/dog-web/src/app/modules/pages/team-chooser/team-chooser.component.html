@@ -1,3 +1,26 @@
 <div id="teams" class="background">
     <h1>Teams</h1>
+    <div class="teams">
+        <div class="base">
+            <div class="item joinable" (click)="onJoinTeam(baseTeam)">
+                <h6>Lobby</h6>
+                <div class="player" *ngFor="let player of baseTeam.members">
+                    {{  player.username }}
+                </div>
+            </div>
+        </div>
+        <div class="list">
+            <div class="item" *ngFor="let team of selectableTeams" 
+                [ngClass]="{ 'joinable': team.members.length < 2 }"
+                (click)="onJoinTeam(team)">
+                <h6>Team {{team.id}}</h6>
+                <div class="player" *ngFor="let player of team.members">
+                    {{  player.username }}
+                </div>
+            </div>
+        </div>
+    </div>
+    <div class="next" *ngIf="canStart">
+        <app-button title="Spiel starten" width="100%"></app-button>
+    </div>
 </div>
