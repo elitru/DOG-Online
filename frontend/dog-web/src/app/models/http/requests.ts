@@ -10,3 +10,7 @@ export interface SessionJoinRequest {
     sessionId: string,
     password: string | null,
 }
+
+export interface TeamJoinRequest {
+    teamId: number;
+}

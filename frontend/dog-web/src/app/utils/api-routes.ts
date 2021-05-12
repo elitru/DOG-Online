@@ -10,4 +10,8 @@ export class ApiRoutes {
     public static readonly Game = class {
         public static readonly Next: string = `${ApiRoutes.BasePath}/game/next`;
     }
+
+    public static readonly Team = class {
+        public static readonly Join: string = `${ApiRoutes.BasePath}/teams/join`;
+    }
 }

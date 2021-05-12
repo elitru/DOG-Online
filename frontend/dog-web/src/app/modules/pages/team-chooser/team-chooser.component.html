@@ -1,6 +1,6 @@
 <div id="teams" class="background">
     <h1>Teams</h1>
-    <div class="teams">
+    <div class="teams" *ngIf="teams.length > 0 && baseTeam">
         <div class="base">
             <div class="item joinable" (click)="onJoinTeam(baseTeam)">
                 <h6>Lobby</h6>

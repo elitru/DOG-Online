@@ -1,22 +1,36 @@
-import { Component, OnInit } from '@angular/core';
-import { BehaviorSubject } from 'rxjs';
+import { Component, OnDestroy, OnInit } from '@angular/core';
+import { BehaviorSubject, Observable, Subscription } from 'rxjs';
 import { Team } from 'src/app/models/http/team';
 import { User } from 'src/app/models/http/user';
 import { GameService } from 'src/app/provider/game.service';
+import { LoaderService } from 'src/app/provider/loader.service';
 
 @Component({
   selector: 'app-team-chooser',
   templateUrl: './team-chooser.component.html',
   styleUrls: ['./team-chooser.component.styl']
 })
-export class TeamChooserComponent implements OnInit {
-  public teams: Team[] = [];
-  public baseTeam: Team = this.teams[0];
+export class TeamChooserComponent implements OnInit, OnDestroy {
+  public teams: Team[];
+  public baseTeam: Team;
 
-  constructor(private gameService: GameService) { }
+  private teamsSubscription: Subscription;
+
+  constructor(private gameService: GameService,
+              private loaderService: LoaderService) { }
 
   public ngOnInit(): void {
-  
+    this.teamsSubscription = this.gameService.teams$.subscribe(teams => {
+      this.teams = teams;
+
+      if(!this.baseTeam && teams.length > 0) {
+        this.baseTeam = teams[0];
+      }
+    });
+  }
+
+  public ngOnDestroy(): void {
+    this.teamsSubscription.unsubscribe();
   }
 
   public get selectableTeams(): Team[] {
@@ -27,16 +41,19 @@ export class TeamChooserComponent implements OnInit {
     return (this.gameService.users$ as BehaviorSubject<User[]>).getValue().length > 2;
   }
 
-  public getTeamForPlayer(userId: string): Team | null {
-    return this.teams.find(t => t.members.map(u => u.id).includes(userId)) || null;
-  }
+  public async onJoinTeam(team: Team): Promise<void> {
+    const currentTeam = this.gameService.getTeamForPlayer(this.gameService.self.id);
+    if((currentTeam.id === team.id) || (team.id !== 0 && team.members.length > 1)) return;
 
-  public onJoinTeam(team: Team): void {
-    const currentTeam = this.getTeamForPlayer('1');
-    if(!currentTeam || currentTeam.id === team.id) return;
+    this.loaderService.setLoading(true);
 
-    const user = currentTeam.members.find(u => u.id);
-    team.members.push(user);
-    currentTeam.members.splice(currentTeam.members.map(u => u.id).indexOf(user.id), 1);
+    try {
+      await this.gameService.joinTeam(team.id);
+    }catch(err) {
+      alert('An error occured!');
+      console.log(err);
+    }
+
+    this.loaderService.setLoading(false);
   }
 }
