@@ -84,6 +84,7 @@ public class GameSocketResource {
                     if(session == null) {
                        return;
                     }
+                    System.out.println("sending message");
                     session.getAsyncRemote().sendObject(message);
                 });
     }

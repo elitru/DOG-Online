@@ -17,6 +17,8 @@ import java.util.Optional;
 public class Game {
     private Map<SessionUser, List<NinePin>> ninepins;
     private Map<Integer, Team> teams;
+    private GameField field;
+
     public static final int MIN_PLAYERS = 3;
     public static final int MAX_PLAYERS = 8;
 

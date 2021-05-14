@@ -1,6 +1,7 @@
 package com.tl.models.application.game.states;
 
 import com.tl.models.application.game.Game;
+import com.tl.models.application.game.GameField;
 import com.tl.models.application.game.GameSessionContext;
 import com.tl.models.application.game.Team;
 import com.tl.models.application.game.ws_messages.messages.StateChangedMessage;
@@ -22,7 +23,7 @@ public class TeamAssignmentState extends GameState {
 
         addEmptyTeams(this.context.getClients().size() / (teamsSupported() ? 2 : 1), teams);
 
-        this.context.setGame(new Game(null, teams));
+        this.context.setGame(new Game(null, teams, new GameField(teams)));
 
         if (!this.teamsSupported()) {
             this.finish();

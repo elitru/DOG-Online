@@ -19,7 +19,7 @@ public class TeamResource {
     @Consumes(MediaType.APPLICATION_JSON)
     @Produces(MediaType.APPLICATION_JSON)
     @Path("/join")
-    public void joinTeam(JoinTeamRequest request, @CookieParam("sessionId") String sessionId, @CookieParam("userId") String userId) {
+    public void joinTeam(JoinTeamRequest request, @HeaderParam("sessionId") String sessionId, @HeaderParam("userId") String userId) {
         Validation.checkForNull(request);
         sessionService.joinTeam(UUID.fromString(sessionId), UUID.fromString(userId), request.teamId);
     }

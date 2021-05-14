@@ -33,4 +33,8 @@ public class Team {
     public int remainingCapacity() {
         return MAX_TEAM_SIZE - this.members.size();
     }
+
+    public int getAmountOfMembers() {
+        return this.members.size();
+    }
 }
