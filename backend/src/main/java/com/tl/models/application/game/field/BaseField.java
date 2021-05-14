@@ -35,10 +35,10 @@ public class BaseField {
     }
 
     public void setNext(BaseField next) {
-        this.next = Optional.of(next);
+        this.next = Optional.ofNullable(next);
     }
 
     public void setPrevious(BaseField previous) {
-        this.previous = Optional.of(previous);
+        this.previous = Optional.ofNullable(previous);
     }
 }

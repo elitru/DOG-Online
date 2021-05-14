@@ -2,6 +2,7 @@ package com.tl.services;
 
 import com.tl.models.application.game.Game;
 import com.tl.models.application.game.GameSessionContext;
+import com.tl.models.application.game.states.IngameState;
 import com.tl.models.application.game.states.LobbyState;
 import com.tl.models.application.game.states.TeamAssignmentState;
 import com.tl.models.application.user.SessionUser;
@@ -97,6 +98,8 @@ public class SessionService {
                 throw new BadRequestException();
             }
             context.setState(new TeamAssignmentState(context));
+        } else if (state instanceof TeamAssignmentState) {
+            context.setState(new IngameState(context));
         } else {
             // TODO implement switch to other states
             throw new NotImplementedYetException();

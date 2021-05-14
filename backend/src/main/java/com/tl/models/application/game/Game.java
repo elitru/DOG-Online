@@ -1,28 +1,49 @@
 package com.tl.models.application.game;
 
+import com.tl.models.application.game.field.HomeField;
+import com.tl.models.application.game.field.StartField;
 import com.tl.models.application.user.SessionUser;
-import lombok.AllArgsConstructor;
-import lombok.Data;
-import lombok.EqualsAndHashCode;
-import lombok.ToString;
+import lombok.*;
 
-import java.util.List;
-import java.util.Map;
-import java.util.Optional;
+import java.util.*;
 
 @AllArgsConstructor
+@NoArgsConstructor
 @ToString
 @Data
 @EqualsAndHashCode
 public class Game {
-    private Map<SessionUser, List<NinePin>> ninepins;
-    private Map<Integer, Team> teams;
-    private GameField field;
+    private Map<SessionUser, List<NinePin>> ninepins = new HashMap<>();
+    private Map<SessionUser, StartField> startFields = new HashMap<>();
+    private Map<Integer, Team> teams = new HashMap<>();
+    private GameBoard field;
 
     public static final int MIN_PLAYERS = 3;
     public static final int MAX_PLAYERS = 8;
 
+    public Game(GameSessionContext ctx, Map<Integer, Team> teams) {
+        this.teams = teams;
+        this.field = new GameBoard(ctx);
+
+        this.initNinePins();
+    }
+
     public Optional<Team> getTeamForUser(SessionUser user) {
         return this.teams.values().stream().filter(t -> t.getMembers().contains(user)).findFirst();
+    }
+
+    private void initNinePins() {
+        startFields.forEach((k, v) -> this.initNinePinsForUser(k, v.getFirstHomeField()));
+    }
+
+    private void initNinePinsForUser(SessionUser user, HomeField field) {
+        List<NinePin> pins = new ArrayList<>();
+        var next = field;
+
+        do {
+            pins.add(new NinePin(next));
+        }while(next.hasNext());
+
+        this.ninepins.put(user, pins);
     }
 }

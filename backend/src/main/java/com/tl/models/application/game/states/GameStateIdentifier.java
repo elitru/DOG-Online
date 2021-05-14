@@ -2,7 +2,8 @@ package com.tl.models.application.game.states;
 
 public enum GameStateIdentifier {
     TeamAssignment("teamAssignment"),
-    Lobby("lobby");
+    Lobby("lobby"),
+    Ingame("ingame");
 
     private String stringRepresentation;
 

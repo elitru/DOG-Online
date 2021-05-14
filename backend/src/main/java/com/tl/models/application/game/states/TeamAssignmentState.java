@@ -1,19 +1,23 @@
 package com.tl.models.application.game.states;
 
 import com.tl.models.application.game.Game;
-import com.tl.models.application.game.GameField;
+import com.tl.models.application.game.GameBoard;
 import com.tl.models.application.game.GameSessionContext;
 import com.tl.models.application.game.Team;
 import com.tl.models.application.game.ws_messages.messages.StateChangedMessage;
 import com.tl.models.application.game.ws_messages.messages.UserChangeTeamMessage;
 import com.tl.models.application.user.SessionUser;
 import com.tl.resources.GameSocketResource;
+import com.tl.services.SessionService;
 
+import javax.inject.Inject;
 import javax.ws.rs.BadRequestException;
 import java.util.*;
 import java.util.stream.Collectors;
 
 public class TeamAssignmentState extends GameState {
+    @Inject
+    SessionService sessionService;
     
     public TeamAssignmentState(GameSessionContext context) {
         super(context);
@@ -23,11 +27,11 @@ public class TeamAssignmentState extends GameState {
 
         addEmptyTeams(this.context.getClients().size() / (teamsSupported() ? 2 : 1), teams);
 
-        this.context.setGame(new Game(null, teams, new GameField(teams)));
+        this.context.setGame(new Game(this.context, teams));
 
         if (!this.teamsSupported()) {
             this.finish();
-            // TODO set next state
+            this.sessionService.advanceStateForSession(context);
         }
     }
 
