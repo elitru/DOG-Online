@@ -25,7 +25,6 @@ public class Game {
         this.teams = teams;
         ctx.setGame(this);
         this.initNinePins();
-        this.initField(ctx);
     }
 
     public void initField(GameSessionContext ctx) {

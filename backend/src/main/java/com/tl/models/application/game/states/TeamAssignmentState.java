@@ -31,7 +31,8 @@ public class TeamAssignmentState extends GameState {
 
         if (!this.teamsSupported()) {
             this.finish();
-            this.sessionService.advanceStateForSession(context);
+            this.context.getGame().initField(this.context);
+            //(this.sessionService.advanceStateForSession(context);
         }
     }
 
@@ -95,7 +96,7 @@ public class TeamAssignmentState extends GameState {
                 context.getGame().getTeams().get(currentTeam).addUserToTeam(u);
                 currentTeam++;
             }
+            context.getGame().getTeams().get(0).getMembers().clear();
         }
-        System.out.println(this.context.getGame().getTeams());
     }
 }

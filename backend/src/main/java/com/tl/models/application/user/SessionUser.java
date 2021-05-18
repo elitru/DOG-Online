@@ -12,7 +12,9 @@ import javax.websocket.Session;
  * @author Elias Trummer, Martin Linhard
  */
 @Data
+@ToString
 public class SessionUser extends User {
+    @ToString.Exclude
     private Session websocketSession;
 
     public SessionUser(String username) {

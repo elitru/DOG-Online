@@ -1,6 +1,7 @@
 package com.tl;
 
 import com.fasterxml.jackson.core.JsonProcessingException;
+import com.fasterxml.jackson.databind.ObjectMapper;
 import com.tl.models.application.game.Game;
 import com.tl.models.application.game.GameBoard;
 import com.tl.models.application.game.GameSessionContext;
@@ -33,5 +34,6 @@ public class ExampleResourceTest {
         var start = board.getReference();
         Assertions.assertSame(start, start.getPrevious().get().getNext().get());
         Assertions.assertEquals(board.toResponseList().size(), 24);
+        System.out.println(new ObjectMapper().writeValueAsString(board.toResponseList()));
     }
 }

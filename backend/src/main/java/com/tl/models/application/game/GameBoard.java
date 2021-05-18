@@ -28,9 +28,15 @@ public class GameBoard {
 
         var players = getTotalPlayers();
 
+        for(Team t : teams.values()) {
+            System.out.println("Team id: " + t.getTeamId());
+            System.out.println(Arrays.toString(t.getMembers().toArray()));
+            System.out.println();
+        }
+
         // check whether there's 1 or 2 players per team
         if (players % 2 != 0) {
-            for (int t = 0; t < teams.size(); t++) {
+            for (int t = 1; t < teams.size(); t++) {
                 var player = teams.get(t).getMembers().get(0);
                 startField = new StartField(Optional.empty(), Optional.empty(), UUID.randomUUID());
 
