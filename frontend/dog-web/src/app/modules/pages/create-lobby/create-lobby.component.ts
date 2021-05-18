@@ -34,7 +34,7 @@ export class CreateLobbyComponent implements OnInit {
       this.socketService.connect(url);
       this.router.navigateByUrl('/lobby');
     }catch(err) {
-      console.log('err -> ' + err);
+      console.log('err -> ' + JSON.stringify(err));
       alert('An error occured')!
     }
     this.loaderService.setLoading(false);
