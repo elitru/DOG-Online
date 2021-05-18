@@ -1,6 +1,7 @@
 package com.tl;
 
 import com.fasterxml.jackson.core.JsonProcessingException;
+import com.tl.models.application.game.Game;
 import com.tl.models.application.game.GameBoard;
 import com.tl.models.application.game.GameSessionContext;
 import com.tl.models.application.game.Team;
@@ -22,8 +23,13 @@ public class ExampleResourceTest {
             //put(0, new Team(0, Arrays.asList(new SessionUser("1"), new SessionUser("2"), new SessionUser("3"), new SessionUser("4"))));
             put(0, new Team(0, Arrays.asList(new SessionUser("1"))));
         }};
+        System.out.println(teams.get(0));
 
-        var board = new GameBoard(new GameSessionContext());
+        var ctx = new GameSessionContext();
+        var game = new Game(ctx, teams);
+
+        var board = game.getField();
+
         var start = board.getReference();
         Assertions.assertSame(start, start.getPrevious().get().getNext().get());
         Assertions.assertEquals(board.toResponseList().size(), 24);

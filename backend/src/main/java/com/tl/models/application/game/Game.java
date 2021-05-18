@@ -23,9 +23,13 @@ public class Game {
 
     public Game(GameSessionContext ctx, Map<Integer, Team> teams) {
         this.teams = teams;
-        this.field = new GameBoard(ctx);
-
+        ctx.setGame(this);
         this.initNinePins();
+        this.initField(ctx);
+    }
+
+    public void initField(GameSessionContext ctx) {
+        this.field = new GameBoard(ctx);
     }
 
     public Optional<Team> getTeamForUser(SessionUser user) {
