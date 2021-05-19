@@ -31,4 +31,7 @@ public class FieldResponse {
     @JsonProperty
     @JsonSerialize(using = OptionalSerializer.class)
     public Optional<UUID> firstTargetFieldId;
+    @JsonProperty
+    @JsonSerialize(using = OptionalSerializer.class)
+    public Optional<UUID> userId;
 }

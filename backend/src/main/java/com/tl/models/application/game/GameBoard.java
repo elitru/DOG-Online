@@ -28,7 +28,7 @@ public class GameBoard {
 
         var players = getTotalPlayers();
 
-        for(Team t : teams.values()) {
+        for (Team t : teams.values()) {
             System.out.println("Team id: " + t.getTeamId());
             System.out.println(Arrays.toString(t.getMembers().toArray()));
             System.out.println();
@@ -121,7 +121,11 @@ public class GameBoard {
         return this.teams.values().stream().mapToInt(Team::getAmountOfMembers).sum();
     }
 
-    public List<FieldResponse> toResponseList() {
+    private Optional<UUID> getUserForStartField(Map<SessionUser, StartField> startFields, UUID startFieldId) {
+        return startFields.entrySet().stream().filter(item -> item.getValue().getNodeId().equals(startFieldId)).map(item -> item.getKey().getId()).findFirst();
+    }
+
+    public List<FieldResponse> toResponseList(Map<SessionUser, StartField> startFields) {
         var result = new ArrayList<FieldResponse>();
         var next = this.reference;
 
@@ -136,11 +140,11 @@ public class GameBoard {
                 var homeFieldId = Optional.of(((StartField) next).getFirstHomeField().getNodeId());
                 var targetFieldId = Optional.of(((StartField) next).getFirstTargetField().getNodeId());
 
-                result.add(new FieldResponse(nodeId, prevId, nextId, homeFieldId, targetFieldId));
+                result.add(new FieldResponse(nodeId, prevId, nextId, homeFieldId, targetFieldId, Optional.empty()));
                 result.addAll(getAttachedFields(((StartField) next).getFirstHomeField()));
                 result.addAll(getAttachedFields(((StartField) next).getFirstTargetField()));
             } else {
-                result.add(new FieldResponse(nodeId, prevId, nextId, Optional.empty(), Optional.empty()));
+                result.add(new FieldResponse(nodeId, prevId, nextId, Optional.empty(), Optional.empty(), Optional.empty()));
             }
 
             next = next.getNext().get();
@@ -158,7 +162,7 @@ public class GameBoard {
             var prevId = next.getPrevious().map(BaseField::getNodeId);
             var nextId = next.getNext().map(BaseField::getNodeId);
 
-            result.add(new FieldResponse(nodeId, prevId, nextId, Optional.empty(), Optional.empty()));
+            result.add(new FieldResponse(nodeId, prevId, nextId, Optional.empty(), Optional.empty(), Optional.empty()));
             next = next.getNext().orElseGet(() -> null);
         }
 
