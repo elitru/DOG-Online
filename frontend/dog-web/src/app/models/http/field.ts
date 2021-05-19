@@ -1,4 +1,5 @@
 import { FieldDTO } from "./dto/field.dto";
+import { GameBoard } from "./gameboard";
 
 export class Field {
     constructor(
@@ -28,9 +29,9 @@ export class StartField extends Field {
     }
 }
 
-export const buildGameBoard = (fields: FieldDTO[]): void => {
+export const buildGameBoard = (fields: FieldDTO[]): GameBoard => {
     const start = Field.fromApi(mocks[0]) as StartField;
-    console.log(buildField(start, mocks, start, mocks[0].nextId));
+    return new GameBoard();
 }
 
 const getFieldById = (fields: FieldDTO[], fieldId: string): Field => {

@@ -15,6 +15,7 @@ import { GameItemComponent } from './modules/pages/game-list/game-item/game-item
 import { LobbyComponent } from './modules/pages/lobby/lobby.component';
 import { CookieService } from 'ngx-cookie-service';
 import { TeamChooserComponent } from './modules/pages/team-chooser/team-chooser.component';
+import { GameboardComponent } from './modules/pages/gameboard/gameboard.component';
 
 @NgModule({
   declarations: [
@@ -28,7 +29,8 @@ import { TeamChooserComponent } from './modules/pages/team-chooser/team-chooser.
     GameListComponent,
     GameItemComponent,
     LobbyComponent,
-    TeamChooserComponent
+    TeamChooserComponent,
+    GameboardComponent
   ],
   imports: [
     BrowserModule,
