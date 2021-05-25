@@ -11,7 +11,7 @@ import java.util.*;
 
 @Data
 public class GameBoard {
-    private static final int NODES_BETWEEN = 15;
+    private static final int NODES_BETWEEN = 11;
     private Map<Integer, Team> teams;
     private BaseField reference;
 
@@ -28,19 +28,13 @@ public class GameBoard {
 
         var players = getTotalPlayers();
 
-        for (Team t : teams.values()) {
-            System.out.println("Team id: " + t.getTeamId());
-            System.out.println(Arrays.toString(t.getMembers().toArray()));
-            System.out.println();
-        }
-
-        // check whether there's 1 or 2 players per team
         if (players % 2 != 0) {
-            for (int t = 1; t < teams.size(); t++) {
-                var player = teams.get(t).getMembers().get(0);
+            for (int t = 1; t <= 4; t++) {
+                var optionalPlayer = Optional.ofNullable(teams.get(t)).map(team -> team.getMembers().get(0));
                 startField = new StartField(Optional.empty(), Optional.empty(), UUID.randomUUID());
 
-                ctx.getGame().getStartFields().put(player, startField);
+                StartField finalStartField = startField;
+                optionalPlayer.ifPresent(player -> ctx.getGame().getStartFields().put(player, finalStartField));
 
                 addFields(startField, 4, HomeField.class, startField::setFirstHomeField);
                 addFields(startField, 4, TargetField.class, startField::setFirstTargetField);
@@ -60,9 +54,9 @@ public class GameBoard {
                 }
             }
         } else {
-            for (int t = 0; t < teams.size() * 2; t++) {
-                int team = t / teams.size();
-                int member = t % teams.size();
+            for (int t = 1; t <= 4; t++) {
+                int team = t == 1 || t == 2 ? 1 : 2;
+                int member = t == 1 || t == 3 ? 0 : 1;
 
                 var player = teams.get(team).getMembers().get(member);
                 startField = new StartField(Optional.empty(), Optional.empty(), UUID.randomUUID());
