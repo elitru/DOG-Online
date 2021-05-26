@@ -8,22 +8,23 @@ import java.util.Optional;
 import java.util.UUID;
 
 @Getter
+@Setter
 public class BaseField {
     private Optional<BaseField> previous;
     private Optional<BaseField> next;
 
-    private UUID nodeId;
+    private int nodeId;
 
-    public BaseField(Optional<BaseField> previous, Optional<BaseField> next, UUID nodeId) {
+    public BaseField(Optional<BaseField> previous, Optional<BaseField> next, int nodeId) {
         this.previous = previous;
         this.next = next;
         this.nodeId = nodeId;
     }
 
-    public BaseField() {
-        this.previous = Optional.empty();
+    public BaseField(int nodeId) {
+        this.nodeId = nodeId;
         this.next = Optional.empty();
-        this.nodeId = UUID.randomUUID();
+        this.previous = Optional.empty();
     }
 
     public boolean hasNext() {

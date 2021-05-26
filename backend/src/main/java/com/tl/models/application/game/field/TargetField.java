@@ -5,11 +5,11 @@ import java.util.UUID;
 
 public class TargetField extends BaseField {
 
-    public TargetField(Optional<BaseField> previous, Optional<BaseField> next, UUID nodeId) {
+    public TargetField(Optional<BaseField> previous, Optional<BaseField> next, int nodeId) {
         super(previous, next, nodeId);
     }
 
-    public TargetField() {
-        super();
+    public TargetField(int nodeId) {
+        super(Optional.empty(), Optional.empty(), nodeId);
     }
 }

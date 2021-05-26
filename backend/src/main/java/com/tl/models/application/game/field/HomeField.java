@@ -5,11 +5,11 @@ import java.util.UUID;
 
 public class HomeField extends BaseField {
 
-    public HomeField(Optional<BaseField> previous, Optional<BaseField> next, UUID nodeId) {
+    public HomeField(Optional<BaseField> previous, Optional<BaseField> next, int nodeId) {
         super(previous, next, nodeId);
     }
 
-    public HomeField() {
-        super();
+    public HomeField(int nodeId) {
+        super(Optional.empty(), Optional.empty(), nodeId);
     }
 }

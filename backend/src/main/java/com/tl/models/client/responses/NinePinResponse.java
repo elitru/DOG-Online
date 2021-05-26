@@ -12,7 +12,7 @@ import java.util.UUID;
 @Data
 public class NinePinResponse {
     public UUID pinId;
-    public UUID fieldId;
+    public int fieldId;
 
     public static NinePinResponse from(NinePin pin) {
         return new NinePinResponse(pin.getPinId(), pin.getCurrentLocation().getNodeId());

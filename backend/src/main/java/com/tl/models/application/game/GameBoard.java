@@ -28,57 +28,35 @@ public class GameBoard {
 
         var players = getTotalPlayers();
 
-        if (players % 2 != 0) {
-            for (int t = 1; t <= 4; t++) {
-                var optionalPlayer = Optional.ofNullable(teams.get(t)).map(team -> team.getMembers().get(0));
-                startField = new StartField(Optional.empty(), Optional.empty(), UUID.randomUUID());
+        int counterBase = 1;
+        int counterOther = -1;
 
-                StartField finalStartField = startField;
-                optionalPlayer.ifPresent(player -> ctx.getGame().getStartFields().put(player, finalStartField));
+        for (int t = 1; t <= 4; t++) {
+            int team = t == 1 || t == 2 ? 1 : 2;
+            int member = t == 1 || t == 3 ? 0 : 1;
 
-                addFields(startField, 4, HomeField.class, startField::setFirstHomeField);
-                addFields(startField, 4, TargetField.class, startField::setFirstTargetField);
+            var player = teams.get(team).getMembers().get(member);
+            startField = new StartField(Optional.empty(), Optional.empty(), counterBase++);
 
-                if (prev == null) {
-                    this.reference = startField;
-                }
+            ctx.getGame().getStartFields().put(player, startField);
 
-                prev = startField;
+            addFields(startField, 4, HomeField.class, startField::setFirstHomeField, counterOther);
+            counterOther -= 4;
+            addFields(startField, 4, TargetField.class, startField::setFirstTargetField, counterOther);
+            counterOther -= 4;
 
-                for (int i2 = 0; i2 < NODES_BETWEEN; i2++) {
-                    var newNode = new BaseField();
-                    newNode.setPrevious(prev);
-                    prev.setNext(newNode);
-                    prev = newNode;
-                    lastField = newNode;
-                }
+            if (prev == null) {
+                this.reference = startField;
             }
-        } else {
-            for (int t = 1; t <= 4; t++) {
-                int team = t == 1 || t == 2 ? 1 : 2;
-                int member = t == 1 || t == 3 ? 0 : 1;
 
-                var player = teams.get(team).getMembers().get(member);
-                startField = new StartField(Optional.empty(), Optional.empty(), UUID.randomUUID());
+            prev = startField;
 
-                ctx.getGame().getStartFields().put(player, startField);
-
-                addFields(startField, 4, HomeField.class, startField::setFirstHomeField);
-                addFields(startField, 4, TargetField.class, startField::setFirstTargetField);
-
-                if (prev == null) {
-                    this.reference = startField;
-                }
-
-                prev = startField;
-
-                for (int i2 = 0; i2 < NODES_BETWEEN; i2++) {
-                    var newNode = new BaseField();
-                    newNode.setPrevious(prev);
-                    prev.setNext(newNode);
-                    prev = newNode;
-                    lastField = newNode;
-                }
+            for (int i2 = 0; i2 < NODES_BETWEEN; i2++) {
+                var newNode = new BaseField(counterBase++);
+                newNode.setPrevious(prev);
+                prev.setNext(newNode);
+                prev = newNode;
+                lastField = newNode;
             }
         }
 
@@ -88,13 +66,13 @@ public class GameBoard {
         lastField.setNext(this.reference);
     }
 
-    private static <T extends BaseField> void addFields(StartField start, int amount, Class<T> targetFieldType, FieldSetter<T> setFirst) {
+    private static <T extends BaseField> void addFields(StartField start, int amount, Class<T> targetFieldType, FieldSetter<T> setFirst, int currentId) {
         BaseField prev = start;
 
         for (int i = 0; i < amount; i++) {
             T newNode = null;
             try {
-                newNode = targetFieldType.newInstance();
+                newNode = targetFieldType.getDeclaredConstructor(int.class).newInstance(currentId--);
             } catch (Exception e) {
                 e.printStackTrace();
             }
@@ -115,8 +93,8 @@ public class GameBoard {
         return this.teams.values().stream().mapToInt(Team::getAmountOfMembers).sum();
     }
 
-    private Optional<UUID> getUserForStartField(Map<SessionUser, StartField> startFields, UUID startFieldId) {
-        return startFields.entrySet().stream().filter(item -> item.getValue().getNodeId().equals(startFieldId)).map(item -> item.getKey().getId()).findFirst();
+    private Optional<UUID> getUserForStartField(Map<SessionUser, StartField> startFields, int startFieldId) {
+        return startFields.entrySet().stream().filter(item -> item.getValue().getNodeId() == startFieldId).map(item -> item.getKey().getId()).findFirst();
     }
 
     public List<FieldResponse> toResponseList(Map<SessionUser, StartField> startFields) {
