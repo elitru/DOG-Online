@@ -1,4 +1,5 @@
 import { AfterViewInit, Component, ElementRef, HostListener, OnInit, ViewChild } from '@angular/core';
+import { GameBoardRenderer } from 'src/app/models/game/gameboard-renderer';
 
 @Component({
   selector: 'app-gameboard',
@@ -6,32 +7,62 @@ import { AfterViewInit, Component, ElementRef, HostListener, OnInit, ViewChild }
   styleUrls: ['./gameboard.component.styl']
 })
 export class GameboardComponent implements OnInit, AfterViewInit {
+  public gameBoardImg = new Image();
+  public pinImg = new Image();
+
   @ViewChild('boardContainer')
   public boardContainerRef: ElementRef;
 
   @ViewChild('board')
   public boardRef: ElementRef;
 
-  constructor() { }
+  public renderer: GameBoardRenderer;
+
+  constructor() {
+    
+  }
 
   public ngOnInit(): void {
     
   }
 
   public ngAfterViewInit(): void {
-    this.setCanvasDimensions();
+    this.initCanvasImages();
+
+    this.initRenderer();
+  }
+
+  private initCanvasImages(): void {
+    this.gameBoardImg.src = '/assets/board.svg';
+    this.gameBoardImg.width = this.canvasSize;
+    this.gameBoardImg.height = this.canvasSize;
+
+    this.pinImg.src = '/assets/pins/red.svg';
+    this.pinImg.width = 80;
+    this.pinImg.height = 80;
   }
 
   @HostListener('window:resize', ['$event'])
   public onResize(event) {
     if(!this.boardContainerRef || !this.boardRef) return;
     
-    this.setCanvasDimensions();
+    this.initRenderer();
   }
 
-  private setCanvasDimensions(): void {
+  private initRenderer(): void {
+    this.renderer = new GameBoardRenderer(
+      // canvas size
+      (window.innerHeight - 50),
+      // html canvas element
+      this.boardRef.nativeElement,
+      // game board image element
+      this.gameBoardImg,
+      // test pin
+      this.pinImg
+    );
+  }
 
-    this.boardRef.nativeElement.style.width = (window.innerHeight - 50) + 'px';
-    this.boardRef.nativeElement.style.height = (window.innerHeight - 50) + 'px';
+  private get canvasSize(): number {
+    return (window.innerHeight - 50);
   }
 }
