@@ -6,6 +6,11 @@ public class StartCard extends BaseCard<Void>{
 
     private StartCardType type;
 
+    public StartCard(StartCardType type) {
+        super();
+        this.type = type;
+    }
+
     @Override
     public void makeMove(Game currentGame, Void payload) {
 

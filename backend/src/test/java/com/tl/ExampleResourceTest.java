@@ -2,10 +2,7 @@ package com.tl;
 
 import com.fasterxml.jackson.core.JsonProcessingException;
 import com.fasterxml.jackson.databind.ObjectMapper;
-import com.tl.models.application.game.Game;
-import com.tl.models.application.game.GameBoard;
-import com.tl.models.application.game.GameSessionContext;
-import com.tl.models.application.game.Team;
+import com.tl.models.application.game.*;
 import com.tl.models.application.user.SessionUser;
 import org.junit.jupiter.api.Assertions;
 import org.junit.jupiter.api.Test;
@@ -37,5 +34,27 @@ public class ExampleResourceTest {
         Assertions.assertSame(start, start.getPrevious().get().getNext().get());
         Assertions.assertEquals(board.toResponseList(game.getStartFields()).size(), 24);
         System.out.println(new ObjectMapper().writeValueAsString(board.toResponseList(game.getStartFields())));
+    }
+
+    @Test
+    public void testCardStackBelowLimit() {
+        var cards = new CardStack();
+        Assertions.assertEquals(cards.getCardStack().size(), 110);
+        for (int i = 0; i < CardStack.MAX_BUFFER_CAP - 1; i++) {
+            var card = cards.drawCard();
+            cards.playCard(card.getCardId());
+        }
+        Assertions.assertEquals(cards.getCardStack().size(), cards.getAllCards().size() - CardStack.MAX_BUFFER_CAP + 1);
+    }
+
+    @Test
+    public void testCardStackLimit() {
+        var cards = new CardStack();
+        Assertions.assertEquals(cards.getCardStack().size(), 110);
+        for (int i = 0; i < CardStack.MAX_BUFFER_CAP; i++) {
+            var card = cards.drawCard();
+            cards.playCard(card.getCardId());
+        }
+        Assertions.assertEquals(cards.getCardStack().size(), cards.getAllCards().size());
     }
 }

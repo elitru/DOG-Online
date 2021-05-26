@@ -6,6 +6,11 @@ public class SimpleCard extends BaseCard<Void>{
 
     private int value;
 
+    public SimpleCard(int value) {
+        super();
+        this.value = value;
+    }
+
     @Override
     public void makeMove(Game currentGame, Void payload) {
 
