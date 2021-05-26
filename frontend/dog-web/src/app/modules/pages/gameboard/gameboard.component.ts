@@ -1,5 +1,7 @@
 import { AfterViewInit, Component, ElementRef, HostListener, OnInit, ViewChild } from '@angular/core';
 import { GameBoardRenderer } from 'src/app/models/game/gameboard-renderer';
+import { Pin, PinColor } from 'src/app/models/http/dto/pin';
+import { FieldUtils } from 'src/app/models/http/fields';
 
 @Component({
   selector: 'app-gameboard',
@@ -58,7 +60,11 @@ export class GameboardComponent implements OnInit, AfterViewInit {
       // game board image element
       this.gameBoardImg,
       // test pin
-      this.pinImg
+      [
+        new Pin('1', PinColor.BLUE, 50),
+        new Pin('2', PinColor.GREEN, 30)
+      ],
+      FieldUtils.getScaledFields(this.canvasSize)
     );
   }
 

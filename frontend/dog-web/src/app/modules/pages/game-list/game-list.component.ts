@@ -1,5 +1,4 @@
 import { Component, HostListener, OnInit } from '@angular/core';
-import { buildGameBoard } from 'src/app/models/http/field';
 import { Game } from 'src/app/models/http/game';
 
 @Component({
@@ -23,7 +22,7 @@ export class GameListComponent implements OnInit {
   }
 
   public ngOnInit(): void {
-    buildGameBoard([]);
+    
   }
 
   @HostListener('document:keydown', ['$event']) 
