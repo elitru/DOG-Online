@@ -1,39 +1,28 @@
 package com.tl.models.application.game.states;
 
 import com.tl.models.application.game.Game;
-import com.tl.models.application.game.GameBoard;
 import com.tl.models.application.game.GameSessionContext;
 import com.tl.models.application.game.Team;
 import com.tl.models.application.game.ws_messages.messages.StateChangedMessage;
 import com.tl.models.application.game.ws_messages.messages.UserChangeTeamMessage;
 import com.tl.models.application.user.SessionUser;
 import com.tl.resources.GameSocketResource;
-import com.tl.services.SessionService;
 
-import javax.inject.Inject;
 import javax.ws.rs.BadRequestException;
 import java.util.*;
 import java.util.stream.Collectors;
 
 public class TeamAssignmentState extends GameState {
-    @Inject
-    SessionService sessionService;
-    
+
     public TeamAssignmentState(GameSessionContext context) {
         super(context);
 
         Map<Integer, Team> teams = new HashMap<>();
         teams.put(0, new Team(0, new ArrayList<>(this.context.getClients().values())));
 
-        addEmptyTeams(this.context.getClients().size() / (teamsSupported() ? 2 : 1), teams);
+        addEmptyTeams(this.context.getClients().size() / 2, teams);
 
         this.context.setGame(new Game(this.context, teams));
-
-        if (!this.teamsSupported()) {
-            this.finish();
-            this.context.getGame().initField(this.context);
-            //(this.sessionService.advanceStateForSession(context);
-        }
     }
 
     public void sendWSInitMessage() {
@@ -84,19 +73,10 @@ public class TeamAssignmentState extends GameState {
     }
 
     public void finish() {
-        if (teamsSupported()) {
-            var availableTeams = context.getGame().getTeams().values().stream().filter(t -> !t.isFull()).collect(Collectors.toList());
-            for (Team t : availableTeams) {
-                var nextPlayers = getNextUnassigned(t.remainingCapacity());
-                nextPlayers.forEach(t::addUserToTeam);
-            }
-        } else {
-            int currentTeam = 1;
-            for (SessionUser u : context.getGame().getTeams().get(0).getMembers()) {
-                context.getGame().getTeams().get(currentTeam).addUserToTeam(u);
-                currentTeam++;
-            }
-            context.getGame().getTeams().get(0).getMembers().clear();
+        var availableTeams = context.getGame().getTeams().values().stream().filter(t -> !t.isFull()).collect(Collectors.toList());
+        for (Team t : availableTeams) {
+            var nextPlayers = getNextUnassigned(t.remainingCapacity());
+            nextPlayers.forEach(t::addUserToTeam);
         }
     }
 }

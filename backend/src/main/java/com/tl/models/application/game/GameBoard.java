@@ -26,10 +26,9 @@ public class GameBoard {
         BaseField prev = null;
         BaseField lastField = null;
 
-        var players = getTotalPlayers();
-
         int counterBase = 1;
-        int counterOther = -1;
+        int counterHome = -1;
+        int counterTarget = -101;
 
         for (int t = 1; t <= 4; t++) {
             int team = t == 1 || t == 2 ? 1 : 2;
@@ -40,10 +39,10 @@ public class GameBoard {
 
             ctx.getGame().getStartFields().put(player, startField);
 
-            addFields(startField, 4, HomeField.class, startField::setFirstHomeField, counterOther);
-            counterOther -= 4;
-            addFields(startField, 4, TargetField.class, startField::setFirstTargetField, counterOther);
-            counterOther -= 4;
+            addFields(startField, 4, HomeField.class, startField::setFirstHomeField, counterHome);
+            counterHome -= 4;
+            addFields(startField, 4, TargetField.class, startField::setFirstTargetField, counterTarget);
+            counterTarget -= 4;
 
             if (prev == null) {
                 this.reference = startField;
