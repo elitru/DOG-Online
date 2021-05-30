@@ -16,6 +16,7 @@ import { LobbyComponent } from './modules/pages/lobby/lobby.component';
 import { CookieService } from 'ngx-cookie-service';
 import { TeamChooserComponent } from './modules/pages/team-chooser/team-chooser.component';
 import { GameboardComponent } from './modules/pages/gameboard/gameboard.component';
+import { CardComponent } from './modules/pages/gameboard/card/card.component';
 
 @NgModule({
   declarations: [
@@ -30,7 +31,8 @@ import { GameboardComponent } from './modules/pages/gameboard/gameboard.componen
     GameItemComponent,
     LobbyComponent,
     TeamChooserComponent,
-    GameboardComponent
+    GameboardComponent,
+    CardComponent
   ],
   imports: [
     BrowserModule,

@@ -1,9 +1,11 @@
-import { Pin } from "../http/dto/pin";
+import { createPipeType } from "@angular/compiler/src/render3/r3_pipe_compiler";
+import { Pin, PinColor } from "../http/dto/pin";
 import { Coordinate, FieldUtils } from "../http/fields";
 
 export class GameBoardRenderer {
     private ctx: CanvasRenderingContext2D;
     private images: HTMLImageElement[] = [];
+    private actionFields: Map<number, Coordinate> = new Map<number, Coordinate>();
 
     constructor(
         private readonly canvasSize: number,
@@ -12,9 +14,16 @@ export class GameBoardRenderer {
         private readonly pins: Pin[],
         private readonly fields: Map<number, Coordinate>
     ) { 
-        this.ctx = canvas.getContext('2d');        
+        this.ctx = canvas.getContext('2d');
+        this.canvas.addEventListener('click', this.onClickCanvas.bind(this));
 
-        this.images = [boardImage, ...pins.map(p => p.image)];
+        const scalingRatio = FieldUtils.getScalingRatio(canvasSize);
+        
+        this.images = [boardImage, ...pins.map(p => {
+            p.image.width = p.image.width * scalingRatio;
+            p.image.height = p.image.height * scalingRatio;
+            return p.image;
+        })];
 
         this.pins.forEach(p => p.coordinates = fields.get(p.fieldId));
 
@@ -22,7 +31,9 @@ export class GameBoardRenderer {
         this.waitForAllImagesToBeLoadedAndInitialize();
 
         setTimeout(() => {
-            this.animatePin(this.pins[0], 45, 'backward');
+            //this.movePinOnBoard(this.pins[0], 45, 'backward');
+            //this.movePinToTarget(this.pins[0], -107, 'forward');
+            //this.movePinToHome(this.pins[0]);
         }, 1000); 
     }
 
@@ -36,6 +47,7 @@ export class GameBoardRenderer {
 
             // render game board
             this.initializeBoard();
+            this.renderActionsOnField(43)
         });
     }
 
@@ -63,6 +75,10 @@ export class GameBoardRenderer {
         return next === 0 ? 1 : next;
     }
 
+    private isPinOnField(fieldId: number): boolean {
+        return !this.pins.every(pin => pin.fieldId !== fieldId);
+    }
+
     private getPreviousFieldId(currentFieldId: number): number {
         if(currentFieldId === 1) {
             return FieldUtils.AmountOfGameFields;
@@ -71,7 +87,64 @@ export class GameBoardRenderer {
         return currentFieldId - 1;
     }
 
-    private async animatePin(pin: Pin, toFieldId: number, direction: 'forward' | 'backward'): Promise<void> {
+    private getStartFieldForPin(pin: Pin): number {
+        switch(pin.color) {
+            case PinColor.RED:      return 1;
+            case PinColor.BLUE:     return 15;
+            case PinColor.GREEN:    return 29;
+            case PinColor.YELLOW:   return 43;
+        }
+    }
+
+    private getFirstTargetFieldForPin(pin: Pin): number {
+        switch(pin.color) {
+            case PinColor.RED:      return -101;
+            case PinColor.BLUE:     return -105;
+            case PinColor.GREEN:    return -109;
+            case PinColor.YELLOW:   return -113;
+        }
+    }
+
+    private getNextFreeHomeField(pin: Pin): number {
+        let firstFreeHomeField: number = 0;
+
+        switch(pin.color) {
+            case PinColor.RED:      firstFreeHomeField = -1;     break;
+            case PinColor.BLUE:     firstFreeHomeField = -5;     break;
+            case PinColor.GREEN:    firstFreeHomeField = -9;     break;
+            case PinColor.YELLOW:   firstFreeHomeField = -13;    break;
+        }
+
+        while(this.isPinOnField(firstFreeHomeField)) {            
+            firstFreeHomeField--;
+        }
+
+        return firstFreeHomeField;
+    }
+
+    private async movePinToTarget(pin: Pin, targetFieldId: number, direction: 'forward' | 'backward'): Promise<void> {
+        // move pin to start field
+        const startFieldId = this.getStartFieldForPin(pin);
+        await this.movePinOnBoard(pin, startFieldId, direction);
+
+        // move to target field
+        let nextTargetField = this.getFirstTargetFieldForPin(pin);
+
+        while(pin.fieldId !== targetFieldId) {
+            const coordinate = this.fields.get(nextTargetField);
+            await this.animateFromTo(pin, nextTargetField, coordinate);
+            nextTargetField--;
+        }
+    }
+
+    private async movePinToHome(pin: Pin): Promise<void> {
+        const firstFreeHomeField = this.getNextFreeHomeField(pin);
+        const coordinate = this.fields.get(firstFreeHomeField);
+        
+        await this.animateFromTo(pin, firstFreeHomeField, coordinate);
+    }
+
+    private async movePinOnBoard(pin: Pin, toFieldId: number, direction: 'forward' | 'backward'): Promise<void> {
         if(pin.fieldId === toFieldId) return;
 
         if(direction === 'forward') {
@@ -81,14 +154,14 @@ export class GameBoardRenderer {
             const nextCoords: Coordinate = this.fields.get(nextFieldId);
 
             await this.animateFromTo(pin, nextFieldId, nextCoords);
-            await this.animatePin(pin, toFieldId, direction);
+            await this.movePinOnBoard(pin, toFieldId, direction);
         }else{
             // animate pin backward
             const previousFieldId = this.getPreviousFieldId(pin.fieldId);
             const previousCoords: Coordinate = this.fields.get(previousFieldId);
 
             await this.animateFromTo(pin, previousFieldId, previousCoords);
-            await this.animatePin(pin, toFieldId, direction);
+            await this.movePinOnBoard(pin, toFieldId, direction);
         }
     }
 
@@ -161,5 +234,81 @@ export class GameBoardRenderer {
 
     private drawNinePin(image: HTMLImageElement, x: number, y: number): void {
         this.ctx.drawImage(image, x, y, image.width, image.width);
+    }
+
+    private renderActionsOnField(fieldId: number): void {
+        const radius = FieldUtils.getActionRadius(fieldId, this.canvasSize);
+        const { x, y } = this.fields.get(fieldId);
+
+        this.ctx.fillStyle = '#da7000';
+        this.ctx.strokeStyle = '#fff';
+        this.ctx.lineWidth = 10;
+        this.ctx.beginPath();
+        
+        if(!FieldUtils.isStartField(fieldId)) {
+            this.ctx.arc(x + radius + 6, y + radius * 2 + 2, radius, 0, 2 * Math.PI);
+            this.actionFields.set(fieldId, {
+                x: x + radius + 6,
+                y: y + radius * 2 + 2
+            });
+        }else{
+            this.ctx.arc(x + radius - 4, y + radius + 17, radius, 0, 2 * Math.PI);
+            this.actionFields.set(fieldId, {
+                x: x + radius - 4,
+                y: y + radius + 17
+            });
+        }
+
+        this.ctx.stroke();
+        this.ctx.fill();
+        this.ctx.font = `18pt Nunito`;
+        this.ctx.fillStyle = '#000';
+        
+        if(FieldUtils.isTargetField(fieldId)) {
+            this.ctx.fillText('👑', x + radius - 11, y + radius * 2 + 10);
+        }else{
+            if(FieldUtils.isStartField(fieldId)) {
+                this.ctx.fillText('📍', x + radius - 12, y + radius + 25);
+            }else{
+                this.ctx.fillText('📍', x + radius - 3, y + radius * 2 + 10);
+            }
+        }
+    }
+
+    private getClickCoordinates(x: number, y: number): Coordinate {
+        const rect = this.canvas.getBoundingClientRect();
+
+        return {
+            x: x - rect.left,
+            y: y - rect.top
+        };
+    }
+
+    private onClickCanvas(event: MouseEvent): void {
+        const clickCoordinates = this.getClickCoordinates(event.clientX, event.clientY);
+        const fieldId = this.getFieldForClick(clickCoordinates);
+        console.log(fieldId);
+    }
+
+    private getFieldForClick({ x, y }: Coordinate): number | null {
+        let result: number = -1;
+        
+        this.actionFields.forEach((fieldCoords, fieldId) => {
+            const actionFieldRadius = FieldUtils.getActionRadius(fieldId, this.canvasSize);
+            console.log(fieldCoords);
+            
+            if(
+                // check x coords
+                x >= (fieldCoords.x - actionFieldRadius) && x <= (fieldCoords.x + actionFieldRadius)
+                    &&
+                // check y coords
+                y >= (fieldCoords.y - actionFieldRadius) && y <= (fieldCoords.y + actionFieldRadius)
+            ) {
+                // action found
+                result = fieldId;
+            }
+        });
+
+        return result === -1 ? null : result;
     }
 }

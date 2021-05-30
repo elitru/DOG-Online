@@ -1,0 +1,15 @@
+export enum CardType {
+    Two = 2,
+    Three = 3,
+    Five = 5,
+    Six = 6,
+    Eight = 8,
+    Nine = 9,
+    Ten = 10,
+    Twelve = 11,
+    Joker = 20,
+    Swap = 21,
+    StartEleven = 22,
+    StartThirteen = 23,
+    Bidirectional = 24,
+}

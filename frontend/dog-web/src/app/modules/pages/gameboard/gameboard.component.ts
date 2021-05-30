@@ -61,7 +61,7 @@ export class GameboardComponent implements OnInit, AfterViewInit {
       this.gameBoardImg,
       // test pin
       [
-        new Pin('1', PinColor.BLUE, 50),
+        new Pin('1', PinColor.BLUE, 1),
         new Pin('2', PinColor.GREEN, 30)
       ],
       FieldUtils.getScaledFields(this.canvasSize)

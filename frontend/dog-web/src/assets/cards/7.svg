@@ -1,0 +1,17 @@
+<svg width="400" height="650" viewBox="0 0 400 650" fill="none" xmlns="http://www.w3.org/2000/svg">
+<g id="Frame 13">
+<rect x="7.5" y="7.5" width="385" height="635" fill="white"/>
+<path id="7" d="M242.252 162.172L189.254 281H172.203L225.025 166.391H155.768V153.031H242.252V162.172Z" fill="#E00A0A"/>
+<g id="Group 2">
+<g id="fire-solid 1" clip-path="url(#clip0)">
+<path id="Vector" d="M207.5 332.456C207.5 325.018 197.922 322.215 193.703 328.381C155 384.953 210 387.5 210 415C210 426.134 200.903 435.143 189.734 434.996C178.744 434.856 170 425.693 170 414.703V387.981C170 381.2 161.728 377.909 157.053 382.825C148.687 391.612 140 406.665 140 425C140 458.084 166.916 485 200 485C233.084 485 260 458.084 260 425C260 371.784 207.5 364.687 207.5 332.456V332.456Z" fill="#E00A0A"/>
+</g>
+</g>
+<rect x="7.5" y="7.5" width="385" height="635" stroke="#E00A0A" stroke-width="15"/>
+</g>
+<defs>
+<clipPath id="clip0">
+<rect width="120" height="160" fill="white" transform="translate(140 325)"/>
+</clipPath>
+</defs>
+</svg>

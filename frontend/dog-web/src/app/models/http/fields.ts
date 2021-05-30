@@ -100,14 +100,14 @@ export class FieldUtils {
         nodeCoordinateEntry(-12, 1210, 1112),
 
         // Home Field Yellow
-        nodeCoordinateEntry(-12, 23, 1037),
+        nodeCoordinateEntry(-13, 23, 1037),
         nodeCoordinateEntry(-14, 23, 1120),
         nodeCoordinateEntry(-15, 23, 1202),
         nodeCoordinateEntry(-16, 102, 1202),
 
         // Target Field RED
         nodeCoordinateEntry(-101, 618, 112),
-        nodeCoordinateEntry(-102, 618, 285),
+        nodeCoordinateEntry(-102, 618, 205),
         nodeCoordinateEntry(-103, 618, 298),
         nodeCoordinateEntry(-104, 618, 390),
 
@@ -130,6 +130,22 @@ export class FieldUtils {
         nodeCoordinateEntry(-116, 409, 592),
     ]);
 
+    public static isStartField(fieldId: number): boolean {
+        return fieldId === 1 || fieldId === 15 || fieldId === 29 || fieldId === 43;
+    }
+
+    public static getActionRadius(fieldId: number, canvasSize: number): number {        
+        if(this.isStartField(fieldId)) {
+            return (75 / 2 * this.getScalingRatio(canvasSize)) + 6;
+        }
+
+        return (25 * this.getScalingRatio(canvasSize)) + 6;
+    }
+
+    public static isTargetField(fieldId: number): boolean {
+        return fieldId <= -101;
+    }
+
     public static getScaledFields(canvasSize: number): Map<number, Coordinate> {
         const scaleRatio = canvasSize / this.BaseScreenSize;
         const result: Map<number, Coordinate> = new Map<number, Coordinate>();
@@ -147,7 +163,7 @@ export class FieldUtils {
     }
 
     public static getScalingRatio(canvasSize: number): number {
-        return this.BaseScreenSize / canvasSize;
+        return canvasSize / this.BaseScreenSize;
     }
 }
 
