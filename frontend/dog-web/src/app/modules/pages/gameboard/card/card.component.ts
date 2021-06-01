@@ -1,5 +1,7 @@
 import { Component, EventEmitter, Input, OnInit, Output } from '@angular/core';
+import { Card } from 'src/app/models/game/card';
 import { CardType } from 'src/app/models/game/card-type';
+import { CardService } from 'src/app/provider/card.service';
 
 @Component({
   selector: 'app-card',
@@ -9,15 +11,20 @@ import { CardType } from 'src/app/models/game/card-type';
 export class CardComponent implements OnInit {
 
   @Input()
-  private cardType: CardType;
+  public card: Card;
 
-  constructor() { }
+  constructor(public cardService: CardService) { }
 
-  ngOnInit(): void {
+  public ngOnInit(): void {
+    
   }
 
   public get imageUrl(): string {
-    return '/assets/cards/1_11.svg'
+    return `/assets/cards/${this.card.type}.svg`;
   }
 
+  public onSelect(): void {
+    console.log(this.card);
+    this.cardService.selectedCard = this.card;
+  }
 }

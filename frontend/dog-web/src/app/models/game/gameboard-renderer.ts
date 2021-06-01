@@ -1,4 +1,5 @@
 import { createPipeType } from "@angular/compiler/src/render3/r3_pipe_compiler";
+import { BehaviorSubject, Observable } from "rxjs";
 import { Pin, PinColor } from "../http/dto/pin";
 import { Coordinate, FieldUtils } from "../http/fields";
 
@@ -6,6 +7,7 @@ export class GameBoardRenderer {
     private ctx: CanvasRenderingContext2D;
     private images: HTMLImageElement[] = [];
     private actionFields: Map<number, Coordinate> = new Map<number, Coordinate>();
+    private _triggeredActions$: BehaviorSubject<number> = new BehaviorSubject<number>(0);
 
     constructor(
         private readonly canvasSize: number,
@@ -31,10 +33,14 @@ export class GameBoardRenderer {
         this.waitForAllImagesToBeLoadedAndInitialize();
 
         setTimeout(() => {
-            //this.movePinOnBoard(this.pins[0], 45, 'backward');
+            //this.movePinOnBoard(this.pins[0], 45, 'forward');
             //this.movePinToTarget(this.pins[0], -107, 'forward');
             //this.movePinToHome(this.pins[0]);
         }, 1000); 
+    }
+
+    public get triggeredActions$(): Observable<number> {
+        return this._triggeredActions$;
     }
 
     private async waitForAllImagesToBeLoadedAndInitialize(): Promise<void> {
@@ -124,8 +130,10 @@ export class GameBoardRenderer {
 
     private async movePinToTarget(pin: Pin, targetFieldId: number, direction: 'forward' | 'backward'): Promise<void> {
         // move pin to start field
-        const startFieldId = this.getStartFieldForPin(pin);
-        await this.movePinOnBoard(pin, startFieldId, direction);
+        if(targetFieldId > 0) {
+            const startFieldId = this.getStartFieldForPin(pin);
+            await this.movePinOnBoard(pin, startFieldId, direction);
+        }
 
         // move to target field
         let nextTargetField = this.getFirstTargetFieldForPin(pin);
@@ -236,6 +244,15 @@ export class GameBoardRenderer {
         this.ctx.drawImage(image, x, y, image.width, image.width);
     }
 
+    private setActionField(fieldIds: number | number[]): void {
+        if(typeof(fieldIds) === 'number') {
+            this.renderActionsOnField(fieldIds);
+            return;
+        }
+
+        fieldIds.forEach(id => this.renderActionsOnField(id));
+    }
+
     private renderActionsOnField(fieldId: number): void {
         const radius = FieldUtils.getActionRadius(fieldId, this.canvasSize);
         const { x, y } = this.fields.get(fieldId);
@@ -246,13 +263,13 @@ export class GameBoardRenderer {
         this.ctx.beginPath();
         
         if(!FieldUtils.isStartField(fieldId)) {
-            this.ctx.arc(x + radius + 6, y + radius * 2 + 2, radius, 0, 2 * Math.PI);
+            this.ctx.arc(x + radius + 8, y + radius * 2 + 2, radius, 0, 2 * Math.PI);
             this.actionFields.set(fieldId, {
                 x: x + radius + 6,
                 y: y + radius * 2 + 2
             });
         }else{
-            this.ctx.arc(x + radius - 4, y + radius + 17, radius, 0, 2 * Math.PI);
+            this.ctx.arc(x + radius - 2, y + radius + 17, radius, 0, 2 * Math.PI);
             this.actionFields.set(fieldId, {
                 x: x + radius - 4,
                 y: y + radius + 17
@@ -287,7 +304,9 @@ export class GameBoardRenderer {
     private onClickCanvas(event: MouseEvent): void {
         const clickCoordinates = this.getClickCoordinates(event.clientX, event.clientY);
         const fieldId = this.getFieldForClick(clickCoordinates);
-        console.log(fieldId);
+        if(!fieldId) return;
+
+        this._triggeredActions$.next(fieldId);
     }
 
     private getFieldForClick({ x, y }: Coordinate): number | null {

@@ -2,6 +2,7 @@ import { AfterViewInit, Component, ElementRef, HostListener, OnInit, ViewChild }
 import { GameBoardRenderer } from 'src/app/models/game/gameboard-renderer';
 import { Pin, PinColor } from 'src/app/models/http/dto/pin';
 import { FieldUtils } from 'src/app/models/http/fields';
+import { GameService } from 'src/app/provider/game.service';
 
 @Component({
   selector: 'app-gameboard',
@@ -20,7 +21,7 @@ export class GameboardComponent implements OnInit, AfterViewInit {
 
   public renderer: GameBoardRenderer;
 
-  constructor() {
+  constructor(public gameService: GameService) {
     
   }
 

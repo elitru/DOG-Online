@@ -4,6 +4,8 @@ import { Router } from '@angular/router';
 import { CookieService } from 'ngx-cookie-service';
 import { BehaviorSubject, Observable } from 'rxjs';
 import { GameState } from '../models/game-state';
+import { Card } from '../models/game/card';
+import { CardType } from '../models/game/card-type';
 import { SessionCreateRequest, SessionJoinRequest, TeamJoinRequest } from '../models/http/requests';
 import { SessionCreateResponse } from '../models/http/responses';
 import { Team } from '../models/http/team';
@@ -20,6 +22,7 @@ export class GameService {
   private _users$: BehaviorSubject<User[]> = new BehaviorSubject<User[]>([]);
   private _teams$: BehaviorSubject<Team[]> = new BehaviorSubject<Team[]>([]);
   private _gameState$: BehaviorSubject<GameState> = new BehaviorSubject<GameState>(GameState.Lobby);
+  private _cards$: BehaviorSubject<Card[]> = new BehaviorSubject<Card[]>([new Card('1', CardType.Eight), new Card('2', CardType.Five), new Card('3', CardType.Joker), new Card('4', CardType.Nine), new Card('5', CardType.Joker), new Card('6', CardType.Nine)]);
 
   public isOwner: boolean = false;
 
@@ -67,6 +70,10 @@ export class GameService {
 
   public get gameState$(): Observable<GameState> {
     return this._gameState$;
+  }
+
+  public get cards$(): Observable<Card[]> {
+    return this._cards$;
   }
 
   public get self(): User {
