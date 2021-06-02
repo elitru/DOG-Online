@@ -7,7 +7,7 @@ public class SimpleCard extends BaseCard<Void>{
     private int value;
 
     public SimpleCard(int value) {
-        super();
+        super(value + "");
         this.value = value;
     }
 

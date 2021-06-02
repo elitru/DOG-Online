@@ -4,6 +4,7 @@ import com.fasterxml.jackson.core.JsonProcessingException;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import com.tl.models.application.game.*;
 import com.tl.models.application.user.SessionUser;
+import com.tl.models.client.responses.NinePinColorResponse;
 import org.junit.jupiter.api.Assertions;
 import org.junit.jupiter.api.Test;
 
@@ -28,7 +29,7 @@ public class ExampleResourceTest {
         var game = new Game(ctx, teams);
         game.initField(ctx);
 
-        var board = game.getField();
+        var board = game.getBoard();
 
         var start = board.getReference();
 
@@ -59,5 +60,14 @@ public class ExampleResourceTest {
             cards.playCard(card.getCardId());
         }
         Assertions.assertEquals(cards.getCardStack().size(), cards.getAllCards().size());
+    }
+
+    @Test
+    public void testEnum() {
+        try {
+            System.out.println(new ObjectMapper().writeValueAsString(NinePinColorResponse.Yellow));
+        } catch (JsonProcessingException e) {
+            e.printStackTrace();
+        }
     }
 }

@@ -11,9 +11,11 @@ import java.util.UUID;
 public class NinePin {
     private final UUID pinId;
     private BaseField currentLocation;
+    private NinePinColor color;
 
-    public NinePin(BaseField location) {
+    public NinePin(BaseField location, NinePinColor color) {
         this.pinId = UUID.randomUUID();
         this.currentLocation = location;
+        this.color = color;
     }
 }

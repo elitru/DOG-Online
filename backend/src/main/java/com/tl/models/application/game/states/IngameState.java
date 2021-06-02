@@ -18,8 +18,9 @@ public class IngameState extends GameState {
 
     @Override
     public void sendWSInitMessage() {
+        System.out.println("sending game init message");
         var message = new StateChangedMessage(GameStateIdentifier.Ingame,
-                new IngameStatePayload(context.getGame().getField().toResponseList(this.context.getGame().getStartFields()),
+                new IngameStatePayload(context.getGame().getBoard().toResponseList(this.context.getGame().getStartFields()),
                 context.getGame().getNinepins()
                         .entrySet()
                         .stream()

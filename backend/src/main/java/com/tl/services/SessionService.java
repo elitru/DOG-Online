@@ -91,6 +91,7 @@ public class SessionService {
     }
 
     public void advanceStateForSession(GameSessionContext context) {
+        System.out.println("advancing state");
         var state = context.getState();
         if (state instanceof LobbyState) {
             // make sure that we have at least 3 players
@@ -99,6 +100,9 @@ public class SessionService {
             }
             context.setState(new TeamAssignmentState(context));
         } else if (state instanceof TeamAssignmentState) {
+            System.out.println("got teamassignment state");
+            // make sure to assign remaining members
+            ((TeamAssignmentState) state).finish();
             context.setState(new IngameState(context));
         } else {
             // TODO implement switch to other states

@@ -5,7 +5,7 @@ import com.tl.models.application.game.Game;
 public class JokerCard extends BaseCard<Void>{
 
     public JokerCard() {
-        super();
+        super("joker");
     }
 
     @Override

@@ -5,7 +5,7 @@ import com.tl.models.application.game.Game;
 public class VariableCard extends BaseCard<Void>{
 
     public VariableCard() {
-        super();
+        super("not available");
     }
 
     @Override

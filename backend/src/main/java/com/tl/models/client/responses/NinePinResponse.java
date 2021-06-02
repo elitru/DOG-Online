@@ -13,8 +13,9 @@ import java.util.UUID;
 public class NinePinResponse {
     public UUID pinId;
     public int fieldId;
+    public NinePinColorResponse color;
 
     public static NinePinResponse from(NinePin pin) {
-        return new NinePinResponse(pin.getPinId(), pin.getCurrentLocation().getNodeId());
+        return new NinePinResponse(pin.getPinId(), pin.getCurrentLocation().getNodeId(), pin.getColor().toResponse());
     }
 }

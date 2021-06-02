@@ -73,7 +73,7 @@ public class TeamAssignmentState extends GameState {
     }
 
     public void finish() {
-        var availableTeams = context.getGame().getTeams().values().stream().filter(t -> !t.isFull()).collect(Collectors.toList());
+        var availableTeams = context.getGame().getTeams().values().stream().filter(t -> !t.isFull() && t.getTeamId() != 0).collect(Collectors.toList());
         for (Team t : availableTeams) {
             var nextPlayers = getNextUnassigned(t.remainingCapacity());
             nextPlayers.forEach(t::addUserToTeam);

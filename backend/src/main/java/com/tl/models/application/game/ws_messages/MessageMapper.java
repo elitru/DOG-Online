@@ -2,6 +2,7 @@ package com.tl.models.application.game.ws_messages;
 
 import com.fasterxml.jackson.databind.ObjectMapper;
 import com.tl.models.application.game.ws_messages.message_type.MessageType;
+import com.tl.models.application.game.ws_messages.messages.DealCardsMessage;
 import com.tl.models.application.game.ws_messages.messages.StateChangedMessage;
 import com.tl.models.application.game.ws_messages.messages.UserChangeTeamMessage;
 import com.tl.models.application.game.ws_messages.messages.UserUpdateMessage;
@@ -28,6 +29,10 @@ public class MessageMapper {
             }
             case UserTeamChangedUpdate: {
                 var parsed = mapper.readValue(json, UserChangeTeamMessage.class);
+                return parsed;
+            }
+            case DealCards: {
+                var parsed = mapper.readValue(json, DealCardsMessage.class);
                 return parsed;
             }
 

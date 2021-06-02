@@ -4,7 +4,7 @@ import com.tl.models.application.game.Game;
 
 public class BidirectionalCard extends BaseCard<Void>{
     public BidirectionalCard() {
-        super();
+        super("4");
     }
 
     @Override

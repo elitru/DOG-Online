@@ -17,7 +17,6 @@ public class GameBoard {
 
     public GameBoard(GameSessionContext ctx) {
         this.teams = ctx.getGame().getTeams();
-        System.out.println(this.teams == null);
         this.initField(ctx);
     }
 

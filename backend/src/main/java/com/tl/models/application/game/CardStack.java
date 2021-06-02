@@ -4,9 +4,6 @@ import com.tl.models.application.game.cards.*;
 import lombok.Data;
 
 import java.util.*;
-import java.util.stream.Collectors;
-import java.util.stream.IntStream;
-
 @Data
 public class CardStack {
 
@@ -39,7 +36,7 @@ public class CardStack {
         this.addCardNTimes(8, cardStack, () -> new StartCard(StartCardType.Eleven));
         this.addCardNTimes(8, cardStack, () -> new StartCard(StartCardType.Thirteen));
         // add the magic 7
-        this.addCardNTimes(8, cardStack, VariableCard::new);
+        //this.addCardNTimes(8, cardStack, VariableCard::new);
         // add the +- 4
         this.addCardNTimes(8, cardStack, BidirectionalCard::new);
 
