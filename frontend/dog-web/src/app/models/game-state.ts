@@ -1,4 +1,5 @@
 export enum GameState {
     Lobby = 'Lobby',
-    TeamAssignment = 'TeamAssignment'
+    TeamAssignment = 'TeamAssignment',
+    Ingame = 'Ingame'
 }

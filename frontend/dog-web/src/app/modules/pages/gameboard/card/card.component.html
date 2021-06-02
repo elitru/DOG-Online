@@ -1,3 +1,8 @@
-<div class="card-item" [ngClass]="{ 'selected': cardService.selectedCard && card.id === cardService.selectedCard.id }" (click)="onSelect()">
+<div class="card-item" 
+    [ngClass]="{ 
+        'selected': cardService.selectedCard && card.id === cardService.selectedCard.id,
+        'selectable': cardService.isSelectable
+    }" 
+    (click)="onSelect()">
     <img src="{{imageUrl}}"/>
 </div>

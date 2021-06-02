@@ -16,7 +16,7 @@ export class TeamChooserComponent implements OnInit, OnDestroy {
 
   private teamsSubscription: Subscription;
 
-  constructor(private gameService: GameService,
+  constructor(public gameService: GameService,
               private loaderService: LoaderService) { }
 
   public ngOnInit(): void {
@@ -52,6 +52,19 @@ export class TeamChooserComponent implements OnInit, OnDestroy {
     }catch(err) {
       alert('An error occured!');
       console.log(err);
+    }
+
+    this.loaderService.setLoading(false);
+  }
+
+  public async onStartGame(): Promise<void> {
+    this.loaderService.setLoading(true);
+
+    try {
+      await this.gameService.advanceState();
+    }catch(err) {
+      console.log(err);
+      alert('An error occured');
     }
 
     this.loaderService.setLoading(false);

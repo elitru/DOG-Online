@@ -1,4 +1,5 @@
-import { Coordinate } from "../fields";
+import { PinDTO } from "../http/dto/pin.dto";
+import { Coordinate } from "../http/fields";
 
 export enum PinColor {
     RED = 'red.svg',
@@ -6,6 +7,15 @@ export enum PinColor {
     GREEN = 'green.svg',
     YELLOW = 'yellow.svg'
 }
+
+const mapColor = (color: 'green' | 'yellow' | 'blue' | 'red'): PinColor => {
+    switch(color) {
+        case 'blue': return PinColor.BLUE;
+        case 'yellow': return PinColor.YELLOW;
+        case 'red': return PinColor.RED;
+        case 'green': return PinColor.GREEN;
+    }
+};
 
 export class Pin {
     public image: HTMLImageElement;
@@ -20,5 +30,9 @@ export class Pin {
         this.image.src = '/assets/pins/' + this.color;
         this.image.width = 80;
         this.image.height = 80;
+    }
+
+    public static fromApi(dto: PinDTO): Pin {
+        return new Pin(dto.pinId, mapColor(dto.color), dto.fieldId);
     }
 }

@@ -1,17 +1,22 @@
-import { AfterViewInit, Component, ElementRef, HostListener, OnInit, ViewChild } from '@angular/core';
+import { AfterViewInit, Component, ElementRef, HostListener, OnDestroy, OnInit, ViewChild } from '@angular/core';
+import { Subscription } from 'rxjs';
+import { GameState } from 'src/app/models/game-state';
 import { GameBoardRenderer } from 'src/app/models/game/gameboard-renderer';
-import { Pin, PinColor } from 'src/app/models/http/dto/pin';
+import { Pin, PinColor } from 'src/app/models/game/pin';
 import { FieldUtils } from 'src/app/models/http/fields';
 import { GameService } from 'src/app/provider/game.service';
+import { LoaderService } from 'src/app/provider/loader.service';
 
 @Component({
   selector: 'app-gameboard',
   templateUrl: './gameboard.component.html',
   styleUrls: ['./gameboard.component.styl']
 })
-export class GameboardComponent implements OnInit, AfterViewInit {
+export class GameboardComponent implements OnInit, AfterViewInit, OnDestroy {
   public gameBoardImg = new Image();
   public pinImg = new Image();
+  
+  private stateSubscription: Subscription;
 
   @ViewChild('boardContainer')
   public boardContainerRef: ElementRef;
@@ -21,12 +26,24 @@ export class GameboardComponent implements OnInit, AfterViewInit {
 
   public renderer: GameBoardRenderer;
 
-  constructor(public gameService: GameService) {
-    
+  constructor(public gameService: GameService,
+              public loaderService: LoaderService) {
+    this.loaderService.setLoading(true);
+
+    this.stateSubscription = this.gameService.gameState$.subscribe(state => {
+      if(state === GameState.Ingame) {
+        this.initRenderer();
+        console.log('State changed to ingame');
+      }
+    });
   }
 
   public ngOnInit(): void {
     
+  }
+
+  public ngOnDestroy(): void {
+    this.stateSubscription.unsubscribe();
   }
 
   public ngAfterViewInit(): void {
@@ -61,12 +78,11 @@ export class GameboardComponent implements OnInit, AfterViewInit {
       // game board image element
       this.gameBoardImg,
       // test pin
-      [
-        new Pin('1', PinColor.BLUE, 1),
-        new Pin('2', PinColor.GREEN, 30)
-      ],
+      this.gameService.pins,
       FieldUtils.getScaledFields(this.canvasSize)
     );
+
+    this.loaderService.setLoading(false);
   }
 
   private get canvasSize(): number {

@@ -1,11 +1,12 @@
 import { createPipeType } from "@angular/compiler/src/render3/r3_pipe_compiler";
 import { BehaviorSubject, Observable } from "rxjs";
-import { Pin, PinColor } from "../http/dto/pin";
 import { Coordinate, FieldUtils } from "../http/fields";
+import { Pin, PinColor } from "./pin";
 
 export class GameBoardRenderer {
     private ctx: CanvasRenderingContext2D;
     private images: HTMLImageElement[] = [];
+    private pins: Pin[] = [];
     private actionFields: Map<number, Coordinate> = new Map<number, Coordinate>();
     private _triggeredActions$: BehaviorSubject<number> = new BehaviorSubject<number>(0);
 
@@ -13,7 +14,7 @@ export class GameBoardRenderer {
         private readonly canvasSize: number,
         private canvas: HTMLCanvasElement,
         private readonly boardImage: HTMLImageElement,
-        private readonly pins: Pin[],
+        private userPins: Map<string, Pin[]>,
         private readonly fields: Map<number, Coordinate>
     ) { 
         this.ctx = canvas.getContext('2d');
@@ -21,7 +22,9 @@ export class GameBoardRenderer {
 
         const scalingRatio = FieldUtils.getScalingRatio(canvasSize);
         
-        this.images = [boardImage, ...pins.map(p => {
+        this.userPins.forEach((value) => value.forEach(p => this.pins.push(p)));
+
+        this.images = [boardImage, ...this.pins.map(p => {
             p.image.width = p.image.width * scalingRatio;
             p.image.height = p.image.height * scalingRatio;
             return p.image;
@@ -53,7 +56,7 @@ export class GameBoardRenderer {
 
             // render game board
             this.initializeBoard();
-            this.renderActionsOnField(43)
+            //this.renderActionsOnField(43)
         });
     }
 

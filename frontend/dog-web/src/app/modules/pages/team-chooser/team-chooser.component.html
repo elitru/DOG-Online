@@ -20,7 +20,7 @@
             </div>
         </div>
     </div>
-    <div class="next" *ngIf="canStart">
-        <app-button title="Spiel starten" width="100%"></app-button>
+    <div class="next" *ngIf="canStart && gameService.isOwner">
+        <app-button title="Spiel starten" width="100%" (click)="onStartGame()"></app-button>
     </div>
 </div>

@@ -5,7 +5,19 @@ import { Card } from '../models/game/card';
   providedIn: 'root'
 })
 export class CardService {
-  public selectedCard: Card;
+  private _selectedCard: Card;
 
   constructor() { }
+
+  public get selectedCard(): Card {
+    return this._selectedCard;
+  }
+
+  public get isSelectable(): boolean {
+    return this.selectedCard === null || this.selectedCard === undefined;
+  }
+
+  public select(card: Card): void {
+    this._selectedCard = card;
+  }
 }

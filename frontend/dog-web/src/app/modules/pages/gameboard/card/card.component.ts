@@ -24,7 +24,8 @@ export class CardComponent implements OnInit {
   }
 
   public onSelect(): void {
-    console.log(this.card);
-    this.cardService.selectedCard = this.card;
+    if(!this.cardService.isSelectable) return;
+
+    this.cardService.select(this.card);
   }
 }
