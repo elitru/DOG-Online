@@ -35,7 +35,7 @@ export class LobbyComponent implements OnInit {
   }
 
   public get canStart(): boolean {
-    return (this.gameService.users$ as BehaviorSubject<User[]>).getValue().length > 2;
+    return (this.gameService.users$ as BehaviorSubject<User[]>).getValue().length == 4;
   }
 
   public copyLink(): void {

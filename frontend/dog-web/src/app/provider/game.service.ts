@@ -7,7 +7,7 @@ import { GameState } from '../models/game-state';
 import { Card } from '../models/game/card';
 import { CardType } from '../models/game/card-type';
 import { GameBoardRenderer } from '../models/game/gameboard-renderer';
-import { Pin } from '../models/game/pin';
+import { Pin, PinColor } from '../models/game/pin';
 import { PinDTO } from '../models/http/dto/pin.dto';
 import { SessionCreateRequest, SessionJoinRequest, TeamJoinRequest } from '../models/http/requests';
 import { SessionCreateResponse } from '../models/http/responses';
@@ -59,14 +59,17 @@ export class GameService {
       this.router.navigateByUrl('/teams');
       this.initializeTeams();
     }else if(next === GameState.Ingame) {
-      this.router.navigateByUrl('/play');
-      console.log(data);
+      console.log('-->' + JSON.stringify(data));
       
       this._users$.getValue().forEach(({ id }: User) => {
-        const userPins: PinDTO[] = data[id];
+        const userPins: PinDTO[] = data.ninepins[id];
         const gamePins: Pin[] = userPins.map(p => Pin.fromApi(p));
         this._pins.set(id, gamePins);
       });
+
+      console.log(this._pins);
+
+      this.router.navigateByUrl('/play');
     }
   }
 
@@ -185,5 +188,9 @@ export class GameService {
 
   public async advanceState(): Promise<void> {
     await this.httpClient.post(ApiRoutes.Game.Next, null, { headers: this.headers }).toPromise();
+  }
+
+  public async selectCard(card: Card): Promise<void> {
+    await this.httpClient.post(ApiRoutes.Cards.SelectCard, { cardId: card.id }, { headers: this.headers });
   }
 }

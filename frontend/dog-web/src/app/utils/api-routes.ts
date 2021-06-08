@@ -14,4 +14,8 @@ export class ApiRoutes {
     public static readonly Team = class {
         public static readonly Join: string = `${ApiRoutes.BasePath}/teams/join`;
     }
+
+    public static readonly Cards = class {
+        public static readonly SelectCard: string = `${ApiRoutes.BasePath}/cards/select`;
+    }
 }

@@ -89,7 +89,7 @@ export class FieldUtils {
 
         // Home Field BLUE
         nodeCoordinateEntry(-5, 1205, 168),
-        nodeCoordinateEntry(-6, 1205, 65),
+        nodeCoordinateEntry(-6, 1205, 82),
         nodeCoordinateEntry(-7, 1205, 0),
         nodeCoordinateEntry(-8, 1128, 0),
 

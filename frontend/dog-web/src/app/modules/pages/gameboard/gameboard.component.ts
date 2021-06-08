@@ -29,13 +29,6 @@ export class GameboardComponent implements OnInit, AfterViewInit, OnDestroy {
   constructor(public gameService: GameService,
               public loaderService: LoaderService) {
     this.loaderService.setLoading(true);
-
-    this.stateSubscription = this.gameService.gameState$.subscribe(state => {
-      if(state === GameState.Ingame) {
-        this.initRenderer();
-        console.log('State changed to ingame');
-      }
-    });
   }
 
   public ngOnInit(): void {
