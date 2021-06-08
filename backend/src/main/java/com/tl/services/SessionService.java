@@ -103,7 +103,7 @@ public class SessionService {
             System.out.println("got teamassignment state");
             // make sure to assign remaining members
             ((TeamAssignmentState) state).finish();
-            context.setState(new IngameState(context));
+            context.setState(new IngameState(context), false);
         } else {
             // TODO implement switch to other states
             throw new NotImplementedYetException();

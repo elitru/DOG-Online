@@ -31,12 +31,14 @@ public class TeamAssignmentState extends GameState {
     }
 
     private List<SessionUser> getNextUnassigned(int amount) {
-        var players = context.getGame().getTeams().get(0).getMembers().subList(0, amount);
+        var unassigned = new ArrayList<SessionUser>();
+
         for (int i = 0; i < amount; i++) {
-            context.getGame().getTeams().get(0).getMembers().remove(0);
+            var p = context.getGame().getTeams().get(0).getMembers().remove(0);
+            unassigned.add(p);
         }
 
-        return players;
+        return unassigned;
     }
 
     private static void addEmptyTeams(int maxMembers, Map<Integer, Team> teams) {

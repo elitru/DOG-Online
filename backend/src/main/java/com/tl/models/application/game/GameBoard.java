@@ -30,8 +30,8 @@ public class GameBoard {
         int counterTarget = -101;
 
         for (int t = 1; t <= 4; t++) {
-            int team = t == 1 || t == 2 ? 1 : 2;
-            int member = t == 1 || t == 3 ? 0 : 1;
+            int team = t == 1 || t == 3 ? 1 : 2;
+            int member = t == 1 || t == 2 ? 0 : 1;
 
             var player = teams.get(team).getMembers().get(member);
             startField = new StartField(Optional.empty(), Optional.empty(), counterBase++);
