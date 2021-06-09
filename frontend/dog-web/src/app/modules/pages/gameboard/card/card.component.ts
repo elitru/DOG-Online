@@ -1,4 +1,5 @@
 import { Component, EventEmitter, Input, OnInit, Output } from '@angular/core';
+import { InteractionState } from 'src/app/models/game-state';
 import { Card } from 'src/app/models/game/card';
 import { CardType } from 'src/app/models/game/card-type';
 import { CardService } from 'src/app/provider/card.service';
@@ -29,7 +30,18 @@ export class CardComponent implements OnInit {
     if(!this.cardService.isSelectable) return;
 
     this.cardService.select(this.card);
-    return;
-    await this.gameService.selectCard(this.card);
+
+    const currentState = this.gameService.interactionState$.getValue();
+    console.log(currentState);
+
+    if(currentState === InteractionState.SwapCardWithTeamMate) {
+      const team = this.gameService.getTeamForPlayer(this.gameService.self.id);
+      const teamMate = team.members.filter(p => p.id !== this.gameService.self.id)[0];
+      console.log('here1');
+      
+      await this.gameService.swapCard(this.cardService.selectedCard.id, teamMate.id);
+    }else if(currentState === InteractionState.SelectCardForMove) {
+      // TODO
+    }
   }
 }

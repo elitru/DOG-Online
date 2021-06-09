@@ -3,7 +3,8 @@ import { MessageType } from "../message-type";
 export enum MessageTypeDTO {
     UserUpdate = 0,
     StateChanged = 1,
-    UserTeamChangedUpdate = 2
+    UserTeamChangedUpdate = 2,
+    DealCards = 3
 };
 
 export class MessageTypeMapper {
@@ -17,6 +18,9 @@ export class MessageTypeMapper {
 
             case MessageTypeDTO.UserUpdate:
                 return MessageType.UserUpdate;
+
+            case MessageTypeDTO.DealCards:
+                return MessageType.DealCards;
 
             default:
                 throw new Error('Invalid Message Type');

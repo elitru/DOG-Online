@@ -34,7 +34,7 @@ import { CardDeckComponent } from './modules/pages/gameboard/card-deck/card-deck
     TeamChooserComponent,
     GameboardComponent,
     CardComponent,
-    CardDeckComponent
+    CardDeckComponent,
   ],
   imports: [
     BrowserModule,

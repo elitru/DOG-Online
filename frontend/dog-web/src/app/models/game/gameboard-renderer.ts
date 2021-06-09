@@ -16,7 +16,7 @@ export class GameBoardRenderer {
         private readonly boardImage: HTMLImageElement,
         private userPins: Map<string, Pin[]>,
         private readonly fields: Map<number, Coordinate>
-    ) { 
+    ) {         
         this.ctx = canvas.getContext('2d');
         this.canvas.addEventListener('click', this.onClickCanvas.bind(this));
 
@@ -47,15 +47,21 @@ export class GameBoardRenderer {
     }
 
     private async waitForAllImagesToBeLoadedAndInitialize(): Promise<void> {
+        if(this.images.every(img => img.complete && img.naturalHeight !== 0)) {
+            this.initializeBoard();
+            return;
+        }
+
         let loaded: number = 0;
 
-        this.images.forEach(img => img.onload = () => {
+
+        this.images.forEach(img => img.onload = () => {            
             loaded++;
 
             if(loaded !== this.images.length) return;
 
             // render game board
-            this.initializeBoard();
+            this.initializeBoard();            
             //this.renderActionsOnField(43)
         });
     }
@@ -64,7 +70,7 @@ export class GameBoardRenderer {
         this.canvas.width = this.canvasSize * window.devicePixelRatio;
         this.canvas.height = this.canvasSize * window.devicePixelRatio;
         this.canvas.style.width = `${this.canvasSize}px`;
-        this.canvas.style.height = `${this.canvasSize}px`;
+        this.canvas.style.height = `${this.canvasSize}px`;        
     }
 
     private async initializeBoard(): Promise<void> {

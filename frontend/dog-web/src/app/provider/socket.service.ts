@@ -1,5 +1,7 @@
 import { Injectable } from '@angular/core';
 import { BehaviorSubject } from 'rxjs';
+import { DealCardsMessage } from '../models/websockets/deal-cards-message';
+import { DealCardsMessageDTO } from '../models/websockets/dto/deal-cards-message.dto';
 import { MessageTypeDTO } from '../models/websockets/dto/message-type.dto';
 import { StateChangedMessageDTO } from '../models/websockets/dto/state-changed-message.dto';
 import { UserTeamChangeMessageDTO } from '../models/websockets/dto/user-team-change-message.dto';
@@ -18,7 +20,8 @@ export class SocketService {
   public userUpdate$: BehaviorSubject<UserUpdateMessage> = new BehaviorSubject<UserUpdateMessage>(null);
   public userTeamChange$: BehaviorSubject<UserTeamChangeMessage> = new BehaviorSubject<UserTeamChangeMessage>(null);
   public stateChange$: BehaviorSubject<StateChangedMessage<any>> = new BehaviorSubject<StateChangedMessage<any>>(null);
- 
+  public dealCards$: BehaviorSubject<DealCardsMessage> = new BehaviorSubject<DealCardsMessage>(null);
+
   constructor() { }
 
   public connect(url: string) : void {
@@ -47,6 +50,12 @@ export class SocketService {
         {
           const message: StateChangedMessage<any> = StateChangedMessage.fromApi(wsData as StateChangedMessageDTO<any>);
           this.stateChange$.next(message);
+          break;
+        }
+      case MessageTypeDTO.DealCards:
+        {
+          const message: DealCardsMessage = DealCardsMessage.fromApi(wsData as DealCardsMessageDTO);
+          this.dealCards$.next(message);
           break;
         }
     }
