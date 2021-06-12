@@ -15,23 +15,22 @@ export class LobbyComponent implements OnInit {
 
   constructor(public gameService: GameService,
               private loaderService: LoaderService,
-              private router: Router,
-              private cookieService: CookieService) { }
+              private router: Router) { }
 
   public ngOnInit(): void {
   
   }
 
   public get lobbyName(): string {
-    return this.cookieService.get('sessionName');
+    return this.gameService.sessionInfo.sessionName;
   }
 
   public get sessionId(): string {
-    return this.cookieService.get('sessionId');
+    return this.gameService.sessionInfo.sessionId;
   }
 
   public get joinLink(): string {
-    return `${'http://192.168.43.75:4200'}/join/${this.sessionId}/${this.lobbyName}`;
+    return `${'http://localhost:4200'}/join/${this.sessionId}/${this.lobbyName}`;
   }
 
   public get canStart(): boolean {

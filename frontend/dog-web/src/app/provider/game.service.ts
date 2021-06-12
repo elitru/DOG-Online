@@ -1,7 +1,6 @@
 import { HttpClient, HttpHeaders } from '@angular/common/http';
 import { Injectable } from '@angular/core';
 import { Router } from '@angular/router';
-import { CookieService } from 'ngx-cookie-service';
 import { BehaviorSubject, Observable } from 'rxjs';
 import { GameState, InteractionState } from '../models/game-state';
 import { Card } from '../models/game/card';
@@ -16,6 +15,7 @@ import { User } from '../models/http/user';
 import { DealCardsMessage } from '../models/websockets/deal-cards-message';
 import { MessageType } from '../models/websockets/message-type';
 import { StateChangedMessage } from '../models/websockets/state-changed-message';
+import { SwapCardMessage } from '../models/websockets/swap-card-message';
 import { UserTeamChangeMessage } from '../models/websockets/user-team-change-message';
 import { UserUpdateMessage } from '../models/websockets/user-update-message';
 import { ApiRoutes } from '../utils/api-routes';
@@ -24,10 +24,24 @@ import { SocketService } from './socket.service';
 
 type UserId = string;
 
+interface SessionInfo {
+  sessionId: string;
+  sessionName: string;
+  userName: string;
+  userId: string;
+}
+
 @Injectable({
   providedIn: 'root'
 })
 export class GameService {
+  public sessionInfo: SessionInfo = {
+    sessionId: '',
+    sessionName: '',
+    userId: '',
+    userName: ''
+  };
+
   private _users$: BehaviorSubject<User[]> = new BehaviorSubject<User[]>([]);
   private _teams$: BehaviorSubject<Team[]> = new BehaviorSubject<Team[]>([]);
   private _gameState$: BehaviorSubject<GameState> = new BehaviorSubject<GameState>(GameState.Lobby);
@@ -39,13 +53,16 @@ export class GameService {
   public isOwner: boolean = false;
 
   constructor(private httpClient: HttpClient,
-              private cookieService: CookieService,
               private socketService: SocketService,
               private router: Router) {
     this.socketService.userUpdate$.subscribe(msg => this.onUserUpdate(msg));
     this.socketService.stateChange$.subscribe(msg => this.onStateChanged(msg));
     this.socketService.userTeamChange$.subscribe(msg => this.onTeamChanged(msg));
     this.socketService.dealCards$.subscribe(msg => this.onCardsChanged(msg));
+    this.socketService.swapCards$.subscribe(msg => this.onSwapCard(msg));
+    this.socketService.userTurn$.subscribe(turn => { if(turn) this.onUserTurn(); });
+
+    //this._pins.set('1', [new Pin('2', PinColor.BLUE, 5)])
   }
 
   private onUserUpdate(userUpdateMessage: UserUpdateMessage): void {
@@ -93,6 +110,21 @@ export class GameService {
     this.setInteractionState(InteractionState.SwapCardWithTeamMate);
   }
 
+
+  private onSwapCard(swapCardMessage: SwapCardMessage): void {
+    if(!swapCardMessage) return;
+
+    const cards = this._cards$.getValue();
+    cards.push(swapCardMessage.card);
+    this._cards$.next(cards);
+
+    this.setInteractionState(InteractionState.NoTurn);
+  }
+
+  private onUserTurn(): void {
+    this.setInteractionState(InteractionState.SelectCardForMove);
+  }
+
   public setInteractionState(next: InteractionState): void {
     this._interactionState$.next(next);
   }
@@ -118,7 +150,7 @@ export class GameService {
   }
 
   public get self(): User {
-    return this._users$.getValue().find(u => u.id === this.cookieService.get('userId'));
+    return this._users$.getValue().find(u => u.id === this.sessionInfo.userId);
   }
 
   public get pins(): Map<UserId, Pin[]> {
@@ -127,7 +159,7 @@ export class GameService {
 
   public get headers(): HttpHeaders {
     return new HttpHeaders({
-      'sessionId': this.cookieService.get('sessionId'),
+      'sessionId': this.sessionInfo.sessionId,
       'userId': this.self.id
     });
   }
@@ -150,12 +182,11 @@ export class GameService {
     this._teams$.next(teams);
   }
 
-  private setCookies(sessionId: string, userId: string, sessionName: string): void {
-    this.cookieService.deleteAll();
-    document.cookie = '';
-    this.cookieService.set('sessionId', sessionId);
-    this.cookieService.set('userId', userId);
-    this.cookieService.set('sessionName', sessionName);
+  private saveSession(sessionId: string, sessionName: string, userId: string, userName: string): void {
+    this.sessionInfo.sessionId = sessionId;
+    this.sessionInfo.sessionName = sessionName;
+    this.sessionInfo.userId = userId;
+    this.sessionInfo.userName = userName;
   }
 
   public async createSession(userName: string, sessionName: string, password: string | null, publicSession: boolean): Promise<SessionCreateResponse> {
@@ -167,7 +198,7 @@ export class GameService {
     };
 
     const response = await this.httpClient.post<SessionCreateResponse>(ApiRoutes.Session.Create, payload).toPromise();
-    this.setCookies(response.sessionId, response.userId, sessionName);
+    this.saveSession(response.sessionId, sessionName, response.userId, userName);
     this.isOwner = true;
 
     return response;
@@ -182,7 +213,7 @@ export class GameService {
 
     try {
       const response = await this.httpClient.post<SessionCreateResponse>(ApiRoutes.Session.Join, payload).toPromise();
-      this.setCookies(response.sessionId, response.userId, sessionName);
+      this.saveSession(response.sessionId, sessionName, response.userId, userName);
       return response;
     }catch(err) {
       throw err;
@@ -214,5 +245,15 @@ export class GameService {
     this._cards$.next(cards.filter(c => c.id !== cardId));
 
     this.setInteractionState(InteractionState.NoTurn);
+  }
+
+  public async getAvailableMoves(pinId: string, card: Card, action: string = ''): Promise<number[]> {
+    const request: any = {
+      pinId,
+      cardId: card.id,
+      action
+    };
+
+    return this.httpClient.post<number[]>(ApiRoutes.Game.Next, request,  { headers: this.headers }).toPromise();
   }
 }

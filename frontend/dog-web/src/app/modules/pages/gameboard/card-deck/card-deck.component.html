@@ -1,4 +1,4 @@
-<div class="card-deck" [ngClass]="{ 'has-selected': cardService.selectedCard }">
+<div class="card-deck" [ngClass]="{ 'has-selected': cardService.selectedCard && gameService.interactionState$.getValue() !== 5 }">
     <app-card *ngFor="let card of gameService.cards$ | async" [card]="card">
     </app-card>
 </div>

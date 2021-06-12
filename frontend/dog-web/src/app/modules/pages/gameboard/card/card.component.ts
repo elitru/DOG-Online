@@ -37,11 +37,11 @@ export class CardComponent implements OnInit {
     if(currentState === InteractionState.SwapCardWithTeamMate) {
       const team = this.gameService.getTeamForPlayer(this.gameService.self.id);
       const teamMate = team.members.filter(p => p.id !== this.gameService.self.id)[0];
-      console.log('here1');
       
       await this.gameService.swapCard(this.cardService.selectedCard.id, teamMate.id);
+      this.cardService.select(null);
     }else if(currentState === InteractionState.SelectCardForMove) {
-      // TODO
+      this.gameService.setInteractionState(InteractionState.SelectPin);
     }
   }
 }

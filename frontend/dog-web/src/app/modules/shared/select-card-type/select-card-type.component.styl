@@ -1,0 +1,39 @@
+@import './../../../../styles.styl'
+
+#select-card-type
+    width 100%
+    height 100%
+    position absolute
+    top 0px
+    left 0px
+    z-index 10000000
+    background rgba(0, 0, 0, .8)
+    display grid
+    place-items center
+
+    .container
+        width 90%
+        padding 40px
+        display flex
+        flex-direction row
+        align-content stretch
+        align-items stretch
+        flex-wrap wrap
+        justify-content center
+        gap 40px
+        background white
+        border-radius 15px
+        flex-direction row
+
+        .card
+            width 250px
+            height auto
+            cursor pointer
+            transition all 300ms
+
+            &:hover
+                transform scale(1.035)
+            
+            img
+                width 100%
+                height auto

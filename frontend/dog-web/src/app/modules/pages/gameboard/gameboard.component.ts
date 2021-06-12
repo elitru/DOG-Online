@@ -1,9 +1,10 @@
 import { AfterViewInit, Component, ElementRef, HostListener, OnDestroy, OnInit, ViewChild } from '@angular/core';
 import { Subscription } from 'rxjs';
-import { GameState } from 'src/app/models/game-state';
+import { GameState, InteractionState } from 'src/app/models/game-state';
 import { GameBoardRenderer } from 'src/app/models/game/gameboard-renderer';
 import { Pin, PinColor } from 'src/app/models/game/pin';
 import { FieldUtils } from 'src/app/models/http/fields';
+import { CardService } from 'src/app/provider/card.service';
 import { GameService } from 'src/app/provider/game.service';
 import { LoaderService } from 'src/app/provider/loader.service';
 
@@ -27,7 +28,8 @@ export class GameboardComponent implements OnInit, AfterViewInit, OnDestroy {
   public renderer: GameBoardRenderer;
 
   constructor(public gameService: GameService,
-              public loaderService: LoaderService) {
+              public loaderService: LoaderService,
+              public cardService: CardService) {
     this.loaderService.setLoading(true);
   }
 
@@ -41,8 +43,20 @@ export class GameboardComponent implements OnInit, AfterViewInit, OnDestroy {
 
   public ngAfterViewInit(): void {
     this.initCanvasImages();
-
     this.initRenderer();
+
+    this.renderer.selectedPin$.subscribe(pin => {
+      if(!pin) return;
+
+      // make api call to get available moves
+      this.getMoves(pin);
+    });
+  }
+
+  private async getMoves(pin: Pin): Promise<void> {
+    const fieldIds = await this.gameService.getAvailableMoves(pin.pinId, this.cardService.selectedCard, this.cardService.jokerAction);
+    this.renderer.setActionField(fieldIds);
+    this.gameService.setInteractionState(InteractionState.SelectMove);
   }
 
   private initCanvasImages(): void {
@@ -72,7 +86,9 @@ export class GameboardComponent implements OnInit, AfterViewInit, OnDestroy {
       this.gameBoardImg,
       // test pin
       this.gameService.pins,
-      FieldUtils.getScaledFields(this.canvasSize)
+      FieldUtils.getScaledFields(this.canvasSize),
+      this.gameService,
+      this.cardService
     );
 
     this.loaderService.setLoading(false);

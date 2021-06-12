@@ -18,6 +18,7 @@ import { TeamChooserComponent } from './modules/pages/team-chooser/team-chooser.
 import { GameboardComponent } from './modules/pages/gameboard/gameboard.component';
 import { CardComponent } from './modules/pages/gameboard/card/card.component';
 import { CardDeckComponent } from './modules/pages/gameboard/card-deck/card-deck.component';
+import { SelectCardTypeComponent } from './modules/shared/select-card-type/select-card-type.component';
 
 @NgModule({
   declarations: [
@@ -35,6 +36,7 @@ import { CardDeckComponent } from './modules/pages/gameboard/card-deck/card-deck
     GameboardComponent,
     CardComponent,
     CardDeckComponent,
+    SelectCardTypeComponent,
   ],
   imports: [
     BrowserModule,

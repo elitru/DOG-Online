@@ -1,0 +1,7 @@
+<div id="select-card-type" *ngIf="gameService.interactionState$.getValue() === 9">
+    <div class="container">
+        <div class="card" *ngFor="let card of cards" (click)="onSelectCard(card)">
+            <img src="/assets/cards/{{card}}.svg" />
+        </div>
+    </div>
+</div>

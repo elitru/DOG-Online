@@ -9,5 +9,9 @@ export enum InteractionState {
     SelectCardForMove = 2,
     SelectPlayer = 3,
     SelectMove = 4,
-    SwapCardWithTeamMate = 5
+    SwapCardWithTeamMate = 5,
+    SelectPin = 6,
+    SelectDirection = 7,
+    SwapPins = 8,
+    SelectJokerAction = 9
 }

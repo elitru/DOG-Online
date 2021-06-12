@@ -14,3 +14,19 @@ export enum CardType {
     StartThirteen = '1_13',
     PM_Four = '4',
 }
+
+export const MoveCards: CardType[] = [
+    CardType.Two,
+    CardType.Three,
+    CardType.Five,
+    CardType.Six,
+    CardType.Seven,
+    CardType.Eight,
+    CardType.Nine,
+    CardType.Ten,
+    CardType.Twelve,
+    CardType.PM_Four,
+    CardType.Swap,
+    CardType.StartEleven,
+    CardType.StartThirteen
+]

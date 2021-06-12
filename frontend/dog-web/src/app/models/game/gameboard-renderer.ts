@@ -1,5 +1,8 @@
 import { createPipeType } from "@angular/compiler/src/render3/r3_pipe_compiler";
 import { BehaviorSubject, Observable } from "rxjs";
+import { CardService } from "src/app/provider/card.service";
+import { GameService } from "src/app/provider/game.service";
+import { InteractionState } from "../game-state";
 import { Coordinate, FieldUtils } from "../http/fields";
 import { Pin, PinColor } from "./pin";
 
@@ -8,14 +11,18 @@ export class GameBoardRenderer {
     private images: HTMLImageElement[] = [];
     private pins: Pin[] = [];
     private actionFields: Map<number, Coordinate> = new Map<number, Coordinate>();
-    private _triggeredActions$: BehaviorSubject<number> = new BehaviorSubject<number>(0);
+    private actions: number[] = [];
+    private _clickedFields$: BehaviorSubject<number> = new BehaviorSubject<number>(0);
+    private _selectedPin$: BehaviorSubject<Pin> = new BehaviorSubject<Pin>(null);
 
     constructor(
         private readonly canvasSize: number,
         private canvas: HTMLCanvasElement,
         private readonly boardImage: HTMLImageElement,
         private userPins: Map<string, Pin[]>,
-        private readonly fields: Map<number, Coordinate>
+        private readonly fields: Map<number, Coordinate>,
+        private gameService: GameService,
+        private cardService: CardService
     ) {         
         this.ctx = canvas.getContext('2d');
         this.canvas.addEventListener('click', this.onClickCanvas.bind(this));
@@ -35,6 +42,14 @@ export class GameBoardRenderer {
         this.setCanvasDimensions();
         this.waitForAllImagesToBeLoadedAndInitialize();
 
+        this._clickedFields$.subscribe(fieldId => {
+            if(!fieldId) return;
+            
+            this.onSelectField(fieldId);
+        });
+
+        this.initFields();
+
         setTimeout(() => {
             //this.movePinOnBoard(this.pins[0], 45, 'forward');
             //this.movePinToTarget(this.pins[0], -107, 'forward');
@@ -42,8 +57,47 @@ export class GameBoardRenderer {
         }, 1000); 
     }
 
-    public get triggeredActions$(): Observable<number> {
-        return this._triggeredActions$;
+    public get selectedPin$(): Observable<Pin> {
+        return this._selectedPin$;
+    }
+
+    private isUserPin(pinId: string): boolean {
+        return !this.userPins.get(this.gameService.self.id).every(pin => pin.pinId !== pinId);
+    }
+
+    private onSelectField(fieldId: number) {
+        const pin = this.getPinForField(fieldId);
+
+        const currentState = this.gameService.interactionState$.getValue();
+
+        if(currentState === InteractionState.SelectPin && pin && this.isUserPin(pin.pinId)) {
+            this._selectedPin$.next(pin);
+        }
+    }
+
+    private initFields(): void {
+        this.fields.forEach(({ x, y }, fieldId) => {
+            const radius = FieldUtils.getActionRadius(fieldId, this.canvasSize);
+
+            if(!FieldUtils.isStartField(fieldId)) {
+                this.ctx.arc(x + radius + 8, y + radius * 2 + 2, radius, 0, 2 * Math.PI);
+                this.actionFields.set(fieldId, {
+                    x: x + radius + 6,
+                    y: y + radius * 2 + 2
+                });
+            }else{
+                this.ctx.arc(x + radius - 2, y + radius + 17, radius, 0, 2 * Math.PI);
+                this.actionFields.set(fieldId, {
+                    x: x + radius - 4,
+                    y: y + radius + 17
+                });
+            }
+        });
+    }
+
+    private getPinForField(field: number): Pin | null {
+        const pin = this.pins.find(({fieldId}: Pin) => fieldId === field);
+        return pin || null;
     }
 
     private async waitForAllImagesToBeLoadedAndInitialize(): Promise<void> {
@@ -62,7 +116,7 @@ export class GameBoardRenderer {
 
             // render game board
             this.initializeBoard();            
-            //this.renderActionsOnField(43)
+            //this.renderActionsOnField(6);
         });
     }
 
@@ -253,7 +307,7 @@ export class GameBoardRenderer {
         this.ctx.drawImage(image, x, y, image.width, image.width);
     }
 
-    private setActionField(fieldIds: number | number[]): void {
+    public setActionField(fieldIds: number | number[]): void {
         if(typeof(fieldIds) === 'number') {
             this.renderActionsOnField(fieldIds);
             return;
@@ -271,18 +325,14 @@ export class GameBoardRenderer {
         this.ctx.lineWidth = 10;
         this.ctx.beginPath();
         
+        if(!this.actions.includes(fieldId)) {
+            this.actions.push(fieldId);
+        }
+
         if(!FieldUtils.isStartField(fieldId)) {
             this.ctx.arc(x + radius + 8, y + radius * 2 + 2, radius, 0, 2 * Math.PI);
-            this.actionFields.set(fieldId, {
-                x: x + radius + 6,
-                y: y + radius * 2 + 2
-            });
         }else{
             this.ctx.arc(x + radius - 2, y + radius + 17, radius, 0, 2 * Math.PI);
-            this.actionFields.set(fieldId, {
-                x: x + radius - 4,
-                y: y + radius + 17
-            });
         }
 
         this.ctx.stroke();
@@ -315,7 +365,11 @@ export class GameBoardRenderer {
         const fieldId = this.getFieldForClick(clickCoordinates);
         if(!fieldId) return;
 
-        this._triggeredActions$.next(fieldId);
+        if(this.actions.includes(fieldId)) {
+            this.actions.splice(this.actions.indexOf(fieldId), 1);
+        }
+
+        this._clickedFields$.next(fieldId);
     }
 
     private getFieldForClick({ x, y }: Coordinate): number | null {
@@ -323,8 +377,7 @@ export class GameBoardRenderer {
         
         this.actionFields.forEach((fieldCoords, fieldId) => {
             const actionFieldRadius = FieldUtils.getActionRadius(fieldId, this.canvasSize);
-            console.log(fieldCoords);
-            
+
             if(
                 // check x coords
                 x >= (fieldCoords.x - actionFieldRadius) && x <= (fieldCoords.x + actionFieldRadius)
