@@ -2,10 +2,7 @@ package com.tl.models.application.game.ws_messages;
 
 import com.fasterxml.jackson.databind.ObjectMapper;
 import com.tl.models.application.game.ws_messages.message_type.MessageType;
-import com.tl.models.application.game.ws_messages.messages.DealCardsMessage;
-import com.tl.models.application.game.ws_messages.messages.StateChangedMessage;
-import com.tl.models.application.game.ws_messages.messages.UserChangeTeamMessage;
-import com.tl.models.application.game.ws_messages.messages.UserUpdateMessage;
+import com.tl.models.application.game.ws_messages.messages.*;
 import lombok.SneakyThrows;
 
 import java.util.Arrays;
@@ -33,6 +30,10 @@ public class MessageMapper {
             }
             case DealCards: {
                 var parsed = mapper.readValue(json, DealCardsMessage.class);
+                return parsed;
+            }
+            case SwapCard: {
+                var parsed = mapper.readValue(json, SwapCardMessage.class);
                 return parsed;
             }
 

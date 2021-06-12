@@ -1,27 +1,28 @@
 package com.tl.models.application.game.ws_messages.messages;
 
 import com.fasterxml.jackson.annotation.JsonProperty;
-import com.fasterxml.jackson.core.JsonProcessingException;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import com.tl.models.application.game.ws_messages.Message;
 import com.tl.models.application.game.ws_messages.message_type.MessageType;
-import com.tl.models.application.user.User;
-import lombok.*;
+import com.tl.models.client.responses.CardResponse;
+import lombok.Data;
+import lombok.NoArgsConstructor;
+import lombok.SneakyThrows;
 
-import java.util.List;
-
-public class UserUpdateMessage extends Message {
+@Data
+@NoArgsConstructor
+public class SwapCardMessage extends Message {
     @JsonProperty
-    private List<User> users;
+    private CardResponse card;
 
-    public UserUpdateMessage(List<User> users) {
-        super(MessageType.UserUpdate);
-        this.users = users;
-    }
-
-    @Override
     @SneakyThrows
+    @Override
     public String serialize() {
         return new ObjectMapper().writeValueAsString(this);
+    }
+
+    public SwapCardMessage(CardResponse card) {
+        super(MessageType.SwapCard);
+        this.card = card;
     }
 }

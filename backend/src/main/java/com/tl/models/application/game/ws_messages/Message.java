@@ -1,11 +1,13 @@
 package com.tl.models.application.game.ws_messages;
 
 import com.fasterxml.jackson.annotation.JsonProperty;
+import com.fasterxml.jackson.databind.ObjectMapper;
 import com.fasterxml.jackson.databind.annotation.JsonDeserialize;
 import com.fasterxml.jackson.databind.annotation.JsonSerialize;
 import com.tl.models.application.game.ws_messages.message_type.MessageType;
 import com.tl.models.application.game.ws_messages.message_type.MessageTypeDeserializer;
 import com.tl.models.application.game.ws_messages.message_type.MessageTypeSerializer;
+import lombok.SneakyThrows;
 import lombok.ToString;
 
 public abstract class Message {
@@ -22,7 +24,10 @@ public abstract class Message {
 
     }
 
-    public abstract String serialize();
+    @SneakyThrows
+    public String serialize() {
+        return new ObjectMapper().writeValueAsString(this);
+    }
 
     public MessageType getType() {
         return type;

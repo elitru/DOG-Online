@@ -4,7 +4,9 @@ public enum MessageType {
     UserUpdate(0),
     StateChanged(1),
     UserTeamChangedUpdate(2),
-    DealCards(3);
+    DealCards(3),
+    SwapCard(4),
+    AskToPlay(5);
 
     private final int id;
 

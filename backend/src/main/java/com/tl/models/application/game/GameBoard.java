@@ -29,11 +29,9 @@ public class GameBoard {
         int counterHome = -1;
         int counterTarget = -101;
 
-        for (int t = 1; t <= 4; t++) {
-            int team = t == 1 || t == 3 ? 1 : 2;
-            int member = t == 1 || t == 2 ? 0 : 1;
+        for (int t = 0; t < 4; t++) {
+            var player = ctx.getGame().getUserForIndex(t);
 
-            var player = teams.get(team).getMembers().get(member);
             startField = new StartField(Optional.empty(), Optional.empty(), counterBase++);
 
             ctx.getGame().getStartFields().put(player, startField);
