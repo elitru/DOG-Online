@@ -9,11 +9,12 @@ import java.util.stream.Collectors;
 
 public class DealCardsSubState extends IngameSubState {
     public DealCardsSubState(GameSessionContext context, int amount) {
-        this.dealCards(context, amount);
+        super(context);
+        this.dealCards(amount);
     }
 
     @Override
-    public void dealCards(GameSessionContext context, int amount) {
+    public void dealCards(int amount) {
         var stack = context.getGame().getStack();
         for (SessionUser s : context.getClients().values()) {
             var cards = stack.drawNCards(amount);

@@ -25,6 +25,10 @@ public class Game {
     public static final int MIN_PLAYERS = 3;
     public static final int MAX_PLAYERS = 8;
 
+    public void setState(IngameSubState state) {
+        this.state = state;
+    }
+
     public Game(GameSessionContext ctx, Map<Integer, Team> teams) {
         this.teams = teams;
         ctx.setGame(this);
@@ -63,7 +67,6 @@ public class Game {
             }
             var p = this.teams.get(team).getMembers().get(player);
             this.initNinePinsForUser(p, this.startFields.get(p).getFirstHomeField(), color);
-            System.out.println(color);
             color = color.next();
         }
     }

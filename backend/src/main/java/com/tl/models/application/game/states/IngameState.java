@@ -3,6 +3,8 @@ package com.tl.models.application.game.states;
 import com.tl.models.application.game.GameBoard;
 import com.tl.models.application.game.GameSessionContext;
 import com.tl.models.application.game.NinePin;
+import com.tl.models.application.game.sub_states.DealCardsSubState;
+import com.tl.models.application.game.sub_states.SwapCardsSubState;
 import com.tl.models.application.game.ws_messages.messages.StateChangedMessage;
 import com.tl.models.application.game.ws_messages.messages.state_data_models.IngameStatePayload;
 import com.tl.models.application.user.SessionUser;
@@ -22,6 +24,8 @@ public class IngameState extends GameState {
         this.context.getGame().setBoard(new GameBoard(context));
         this.context.getGame().initNinePins();
         this.sendWSInitMessage();
+        this.context.getGame().setState(new DealCardsSubState(this.context, 6));
+        this.context.getGame().setState(new SwapCardsSubState(context));
     }
 
     @Override

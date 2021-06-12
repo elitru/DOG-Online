@@ -52,7 +52,6 @@ public class TeamAssignmentState extends GameState {
     }
 
     public void joinTeam(int target, SessionUser user) {
-        System.out.println(this.context.getGame().getTeams());
         if (!teamsSupported()) {
             return;
         }
