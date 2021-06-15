@@ -36,7 +36,7 @@ public class GameResource {
     @POST
     @Consumes(MediaType.APPLICATION_JSON)
     @Produces(MediaType.APPLICATION_JSON)
-    @Path("/avMoves")
+    @Path("/available-moves")
     public void availableMoves(@HeaderParam("sessionId") String sessionId, @HeaderParam("userId") String userId) {
         var session = this.sessionService.getSessionOrThrow(UUID.fromString(sessionId));
 

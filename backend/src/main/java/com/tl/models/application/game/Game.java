@@ -3,12 +3,14 @@ package com.tl.models.application.game;
 import com.tl.models.application.game.field.BaseField;
 import com.tl.models.application.game.field.HomeField;
 import com.tl.models.application.game.field.StartField;
+import com.tl.models.application.game.field.TargetField;
 import com.tl.models.application.game.sub_states.IngameSubState;
 import com.tl.models.application.user.SessionUser;
 import lombok.*;
 
 import javax.swing.*;
 import javax.ws.rs.BadRequestException;
+import java.nio.channels.NotYetBoundException;
 import java.util.*;
 import java.util.stream.Collectors;
 
@@ -96,6 +98,10 @@ public class Game {
         return this.ninepins.get(player).stream().filter(p -> p.getPinId().equals(pinId)).findFirst().get();
     }
 
+    private int getRealIndex(int i) {
+        return i <= GameBoard.RING_NODES ? i : i - GameBoard.RING_NODES;
+    }
+
     public List<Integer> calculateAllMoves(UUID pinId, UUID cardId, Optional<String> jokerIdent, SessionUser player) {
         var currentField = this.getPinForPinId(player, pinId).getCurrentLocation();
         var card = this.stack.getAllCards().get(cardId);
@@ -109,20 +115,75 @@ public class Game {
             case "9":
             case "10":
             case "12":
-                return this.calculateAllMovesForSimpleCard(Integer.parseInt(card.getStringRepresentation()), currentField);
+                return this.calculateAllMovesForSimpleCard(Integer.parseInt(card.getStringRepresentation()), currentField, player);
             default:
                 throw new BadRequestException("Encountered invalid card");
         }
     }
 
-    private List<Integer> getAllStraightWalkPositions(int amount, BaseField currentField) {
+    private List<Integer> getAllStraightWalkPositions(int amount, BaseField currentField, SessionUser currentPlayer) {
 
         // make sure we're not on a home field
         if (currentField instanceof HomeField) {
             return new ArrayList<>();
         }
 
-        return this.getAllStraightWalkPositions(amount, currentField, new ArrayList<>());
+        // Calculate all nodes on the path --> start with the first field after the current field
+        List<Integer> path = new ArrayList<>();
+
+        for (int i = currentField.getNodeId() + 1; i <= currentField.getNodeId() + amount; i++) {
+            int index = this.getRealIndex(i);
+            path.add(index);
+        }
+
+        // first, check if we're traversing a start field
+        var start = path.stream().filter(integer -> Arrays.stream(GameBoard.START_FIELDS).anyMatch(integer::equals)).findFirst();
+
+        return start.map(fieldId -> {
+            List<Integer> all = new ArrayList<>();
+            StartField field = this.board.getCircleFieldById(fieldId);
+
+            // start field is not occupied by pin of the same color --> add the end field
+            if (!this.isStartFieldOccupiedByPlayerOfSameColor(field)) {
+                all.add(currentField.getNodeId() + amount);
+            }
+
+            // now: check if the player would be able to move his pin towards the goal
+            // first: check if the startfield is actually owned by the current player
+            OUTER:
+            if (this.startFields.get(currentPlayer).getNodeId() == fieldId) {
+                // we know that we're not *currently* standing on a start field as the current field is not included
+                // in the path list (and therefore not in the search results)
+                // get the index of the start field within the path list to calculate the remaining fields after it
+                int indexWithinPath = path.indexOf(fieldId);
+                int remainingFields = path.size() - (indexWithinPath + 1);
+
+                // make sure that we don't have more points than necessary
+                if (remainingFields > 4) {
+                    break OUTER;
+                }
+
+                // check whether there are enough free fields left; stop at the first sight of a occupied field
+                var curr = field.getFirstTargetField();
+                var free = true;
+
+                for (int i = 0; i < remainingFields; i++) {
+                    if (this.isFieldOccupiedByPin(curr)) {
+                        free = false;
+                        break;
+                    }
+                }
+
+                // check if not occupied
+                if (free) {
+                    all.add(field.getFirstTargetField().getNodeId() - remainingFields);
+                }
+            }
+            return all;
+        }).orElse(new ArrayList<>() {{
+            add(getRealIndex(currentField.getNodeId() + amount));
+        }});
+
     }
 
     private boolean isStartFieldOccupiedByPlayerOfSameColor(BaseField startField) {
@@ -136,26 +197,19 @@ public class Game {
         return false;
     }
 
-    private List<Integer> getAllStraightWalkPositions(int amount, BaseField currentField, List<Integer> previous) {
-        if (amount == 0 && !(currentField instanceof StartField)) {
-            previous.add(currentField.getNodeId());
-            return previous;
-        } else if (amount == 0) {
-            // amount = 0; currentField is instance of StartField
-            // it isn't occupied by a ninepin of the same color --> mark as viable choice
-            if (!isStartFieldOccupiedByPlayerOfSameColor(currentField)) {
-                previous.add(currentField.getNodeId());
+    private boolean isFieldOccupiedByPin(BaseField field) {
+        for (Map.Entry<SessionUser, List<NinePin>> pin : this.ninepins.entrySet()) {
+            for (NinePin p : pin.getValue()) {
+                // if the location of the pin is the field you search for
+                if (p.getCurrentLocation().equals(field)) {
+                    return true;
+                }
             }
-            return previous;
-        } else if (currentField instanceof StartField) {
-            // TODO fix this case (check if it is your own startfield; if so check if theres space in goal)
-            // currentField is instance of StartField, but there's still some fields to go
-            return getAllStraightWalkPositions(amount - 1, currentField.getNext().get(), previous);
         }
-        return previous;
+        return false;
     }
 
-    private List<Integer> calculateAllMovesForSimpleCard(int cardValue, BaseField currentField) {
-        return this.getAllStraightWalkPositions(cardValue, currentField);
+    private List<Integer> calculateAllMovesForSimpleCard(int cardValue, BaseField currentField, SessionUser player) {
+        return this.getAllStraightWalkPositions(cardValue, currentField, player);
     }
 }

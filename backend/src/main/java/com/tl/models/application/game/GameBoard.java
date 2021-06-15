@@ -11,13 +11,26 @@ import java.util.*;
 
 @Data
 public class GameBoard {
-    private static final int NODES_BETWEEN = 11;
+    private static final int NODES_BETWEEN = 13;
+    public static final int RING_NODES = (NODES_BETWEEN + 1) * 4;
+    public static final int[] START_FIELDS = {1 + (RING_NODES * 0), 1 + (RING_NODES * 1), 1 + (RING_NODES * 2), 1 + (RING_NODES * 3)};
     private Map<Integer, Team> teams;
     private BaseField reference;
 
     public GameBoard(GameSessionContext ctx) {
         this.teams = ctx.getGame().getTeams();
         this.initField(ctx);
+    }
+
+    private BaseField getCircleFieldById(int id, BaseField currentRef) {
+        if (currentRef.getNodeId() == id) {
+            return currentRef;
+        }
+        return this.getCircleFieldById(id, currentRef.getNext().get());
+    }
+
+    public <T extends BaseField> T getCircleFieldById(int id) {
+        return ((T) this.getCircleFieldById(id, this.reference));
     }
 
     private void initField(GameSessionContext ctx) {
