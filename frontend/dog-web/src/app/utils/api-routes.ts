@@ -10,6 +10,8 @@ export class ApiRoutes {
     public static readonly Game = class {
         public static readonly Next: string = `${ApiRoutes.BasePath}/game/next`;
         public static readonly SwapCard: string = `${ApiRoutes.BasePath}/game/swap`;
+        public static readonly GetMoves: string = `${ApiRoutes.BasePath}/game/available-moves`;
+        public static readonly MakeMove: string = `${ApiRoutes.BasePath}/game/move`;
     }
 
     public static readonly Team = class {

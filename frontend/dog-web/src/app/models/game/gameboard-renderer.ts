@@ -14,6 +14,7 @@ export class GameBoardRenderer {
     private actions: number[] = [];
     private _clickedFields$: BehaviorSubject<number> = new BehaviorSubject<number>(0);
     private _selectedPin$: BehaviorSubject<Pin> = new BehaviorSubject<Pin>(null);
+    public selectedPin: Pin;
 
     constructor(
         private readonly canvasSize: number,
@@ -65,13 +66,22 @@ export class GameBoardRenderer {
         return !this.userPins.get(this.gameService.self.id).every(pin => pin.pinId !== pinId);
     }
 
-    private onSelectField(fieldId: number) {
+    private async onSelectField(fieldId: number) {
         const pin = this.getPinForField(fieldId);
 
         const currentState = this.gameService.interactionState$.getValue();
 
         if(currentState === InteractionState.SelectPin && pin && this.isUserPin(pin.pinId)) {
             this._selectedPin$.next(pin);
+            return;
+        }
+
+        if(currentState === InteractionState.SelectMove) {
+            await this.gameService.makeMove(this.selectedPin.pinId, this.cardService.selectedCard, fieldId, this.cardService.jokerAction);
+            this.cardService.selectedCard = null;
+            this.cardService.jokerAction = null;
+            this.selectedPin = null;
+            this.gameService.setInteractionState(InteractionState.NoTurn);
         }
     }
 
@@ -109,7 +119,7 @@ export class GameBoardRenderer {
         let loaded: number = 0;
 
 
-        this.images.forEach(img => img.onload = () => {            
+        this.images.forEach(img => img.onload = () => {
             loaded++;
 
             if(loaded !== this.images.length) return;
@@ -308,6 +318,8 @@ export class GameBoardRenderer {
     }
 
     public setActionField(fieldIds: number | number[]): void {
+        this.actions = [];
+
         if(typeof(fieldIds) === 'number') {
             this.renderActionsOnField(fieldIds);
             return;
@@ -366,8 +378,11 @@ export class GameBoardRenderer {
         if(!fieldId) return;
 
         if(this.actions.includes(fieldId)) {
-            this.actions.splice(this.actions.indexOf(fieldId), 1);
+            // clear actions
+            this.actions = [];
         }
+
+        this.initializeBoard();
 
         this._clickedFields$.next(fieldId);
     }

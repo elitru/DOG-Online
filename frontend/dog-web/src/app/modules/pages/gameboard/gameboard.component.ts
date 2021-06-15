@@ -2,9 +2,11 @@ import { AfterViewInit, Component, ElementRef, HostListener, OnDestroy, OnInit, 
 import { Subscription } from 'rxjs';
 import { GameState, InteractionState } from 'src/app/models/game-state';
 import { GameBoardRenderer } from 'src/app/models/game/gameboard-renderer';
+import { Messages } from 'src/app/models/game/message';
 import { Pin, PinColor } from 'src/app/models/game/pin';
 import { FieldUtils } from 'src/app/models/http/fields';
 import { CardService } from 'src/app/provider/card.service';
+import { DialogService } from 'src/app/provider/dialog.service';
 import { GameService } from 'src/app/provider/game.service';
 import { LoaderService } from 'src/app/provider/loader.service';
 
@@ -29,7 +31,8 @@ export class GameboardComponent implements OnInit, AfterViewInit, OnDestroy {
 
   constructor(public gameService: GameService,
               public loaderService: LoaderService,
-              public cardService: CardService) {
+              public cardService: CardService,
+              public dialogService: DialogService) {
     this.loaderService.setLoading(true);
   }
 
@@ -55,6 +58,14 @@ export class GameboardComponent implements OnInit, AfterViewInit, OnDestroy {
 
   private async getMoves(pin: Pin): Promise<void> {
     const fieldIds = await this.gameService.getAvailableMoves(pin.pinId, this.cardService.selectedCard, this.cardService.jokerAction);
+    
+    if(fieldIds.length === 0) {
+      this.dialogService.show('Fehler', Messages.NO_MOVE_POSSIBLE);
+      this.gameService.setInteractionState(InteractionState.SelectPin);
+      return;
+    }
+    
+    this.renderer.selectedPin = pin;
     this.renderer.setActionField(fieldIds);
     this.gameService.setInteractionState(InteractionState.SelectMove);
   }

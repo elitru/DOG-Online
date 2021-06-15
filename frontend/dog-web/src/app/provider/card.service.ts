@@ -28,6 +28,10 @@ export class CardService {
     return this._selectedCard;
   }
 
+  public set selectedCard(card: Card | null) {
+    this._selectedCard = card;
+  }
+
   public get isSelectable(): boolean {
     return this._selectable && (this.selectedCard === null || this.selectedCard === undefined);
   }

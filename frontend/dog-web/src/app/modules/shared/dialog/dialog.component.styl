@@ -1,0 +1,55 @@
+@import './../../../../styles.styl'
+
+#dialog
+    width 100%
+    height 100%
+    position absolute
+    top 0px
+    left 0px
+    display grid
+    place-items center
+    background: rgba(0, 0, 0, .8)
+
+    .box
+        width auto
+        height auto
+        padding 30px
+        min-width 400px
+        max-width 450px
+        background white
+        border-radius 10px
+        display flex
+        flex-direction column
+
+        p
+            padding 0px
+            margin 0px
+
+        .title
+            font-size 25px
+            color blue_dark
+            border-bottom solid 4px blue_dark
+            margin-bottom 20px
+            padding-bottom 5px
+            font-weight bold
+
+        .text
+            color blue
+            font-size 18px
+            text-align center
+
+        button
+            width 100%
+            font-size 20px
+            border solid 3px red_dark
+            color white
+            background red
+            border-radius 8px
+            cursor pointer
+            transition all 300ms
+            font-size 700
+            padding 10px 0px
+            margin-top 25px
+
+            &:hover
+                background red_dark

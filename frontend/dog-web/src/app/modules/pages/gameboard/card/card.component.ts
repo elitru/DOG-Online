@@ -32,7 +32,6 @@ export class CardComponent implements OnInit {
     this.cardService.select(this.card);
 
     const currentState = this.gameService.interactionState$.getValue();
-    console.log(currentState);
 
     if(currentState === InteractionState.SwapCardWithTeamMate) {
       const team = this.gameService.getTeamForPlayer(this.gameService.self.id);

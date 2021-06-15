@@ -19,6 +19,8 @@ import { GameboardComponent } from './modules/pages/gameboard/gameboard.componen
 import { CardComponent } from './modules/pages/gameboard/card/card.component';
 import { CardDeckComponent } from './modules/pages/gameboard/card-deck/card-deck.component';
 import { SelectCardTypeComponent } from './modules/shared/select-card-type/select-card-type.component';
+import { InfoBoxComponent } from './modules/shared/info-box/info-box.component';
+import { DialogComponent } from './modules/shared/dialog/dialog.component';
 
 @NgModule({
   declarations: [
@@ -37,6 +39,8 @@ import { SelectCardTypeComponent } from './modules/shared/select-card-type/selec
     CardComponent,
     CardDeckComponent,
     SelectCardTypeComponent,
+    InfoBoxComponent,
+    DialogComponent,
   ],
   imports: [
     BrowserModule,

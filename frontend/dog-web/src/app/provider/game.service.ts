@@ -6,6 +6,7 @@ import { GameState, InteractionState } from '../models/game-state';
 import { Card } from '../models/game/card';
 import { CardType } from '../models/game/card-type';
 import { GameBoardRenderer } from '../models/game/gameboard-renderer';
+import { Messages } from '../models/game/message';
 import { Pin, PinColor } from '../models/game/pin';
 import { PinDTO } from '../models/http/dto/pin.dto';
 import { SessionCreateRequest, SessionJoinRequest, TeamJoinRequest } from '../models/http/requests';
@@ -47,6 +48,8 @@ export class GameService {
   private _gameState$: BehaviorSubject<GameState> = new BehaviorSubject<GameState>(GameState.Lobby);
   private _cards$: BehaviorSubject<Card[]> = new BehaviorSubject<Card[]>(/*[new Card('1', CardType.Eight), new Card('2', CardType.Five), new Card('3', CardType.Joker), new Card('4', CardType.Nine), new Card('5', CardType.Joker), new Card('6', CardType.Nine)]*/[]);
   private _interactionState$: BehaviorSubject<InteractionState> = new BehaviorSubject<InteractionState>(InteractionState.NoTurn);
+
+  public infoMessage$: BehaviorSubject<string> = new BehaviorSubject<string>(Messages.SELECT_CARD_FOR_SWAP);
 
   private _pins: Map<UserId, Pin[]> = new Map<UserId, Pin[]>();
 
@@ -254,6 +257,17 @@ export class GameService {
       action
     };
 
-    return this.httpClient.post<number[]>(ApiRoutes.Game.Next, request,  { headers: this.headers }).toPromise();
+    return this.httpClient.post<number[]>(ApiRoutes.Game.GetMoves, request,  { headers: this.headers }).toPromise();
+  }
+
+  public async makeMove(pinId: string, card: Card, fieldId: number, action: string = ''): Promise<void> {
+    const request: any = {
+      pinId,
+      cardId: card.id,
+      action,
+      fieldId
+    };
+
+    return this.httpClient.post<void>(ApiRoutes.Game.MakeMove, request, { headers: this.headers }).toPromise();
   }
 }

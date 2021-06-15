@@ -1,0 +1,7 @@
+<div id="dialog" *ngIf="dialogService.visible$ | async">
+    <div class="box">
+        <p class="title">{{ dialogService.title$ | async }}</p>
+        <p class="text">{{ dialogService.text$ | async }}</p>
+        <button (click)="dialogService.hide()">Schließen</button>
+    </div>
+</div>
