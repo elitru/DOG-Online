@@ -21,6 +21,7 @@ import { CardDeckComponent } from './modules/pages/gameboard/card-deck/card-deck
 import { SelectCardTypeComponent } from './modules/shared/select-card-type/select-card-type.component';
 import { InfoBoxComponent } from './modules/shared/info-box/info-box.component';
 import { DialogComponent } from './modules/shared/dialog/dialog.component';
+import { SelectActionComponent } from './modules/shared/select-action/select-action.component';
 
 @NgModule({
   declarations: [
@@ -41,6 +42,7 @@ import { DialogComponent } from './modules/shared/dialog/dialog.component';
     SelectCardTypeComponent,
     InfoBoxComponent,
     DialogComponent,
+    SelectActionComponent
   ],
   imports: [
     BrowserModule,

@@ -9,7 +9,7 @@ import { GameBoardRenderer } from '../models/game/gameboard-renderer';
 import { Messages } from '../models/game/message';
 import { Pin, PinColor } from '../models/game/pin';
 import { PinDTO } from '../models/http/dto/pin.dto';
-import { SessionCreateRequest, SessionJoinRequest, TeamJoinRequest } from '../models/http/requests';
+import { PlayCardRequest, SessionCreateRequest, SessionJoinRequest, TeamJoinRequest } from '../models/http/requests';
 import { SessionCreateResponse } from '../models/http/responses';
 import { Team } from '../models/http/team';
 import { User } from '../models/http/user';
@@ -192,6 +192,14 @@ export class GameService {
     this.sessionInfo.userName = userName;
   }
 
+  public getPinsOnHomeFields(): Pin[] {
+    return this.pins.get(this.self.id).filter(pin => pin.fieldId < 0 && pin.fieldId >= -16)
+  }
+
+  public get canStart(): boolean {
+    return this.getPinsOnHomeFields.length > 0;
+  }
+
   public async createSession(userName: string, sessionName: string, password: string | null, publicSession: boolean): Promise<SessionCreateResponse> {
     const payload: SessionCreateRequest = {
       userName,
@@ -266,6 +274,18 @@ export class GameService {
       cardId: card.id,
       action,
       fieldId
+    };
+
+    return this.httpClient.post<void>(ApiRoutes.Game.MakeMove, request, { headers: this.headers }).toPromise();
+  }
+
+  public async startPin(cardId: string): Promise<void> {
+    const request: PlayCardRequest<{ action: number }> = {
+      cardId: cardId,
+      pinId: this.getPinsOnHomeFields()[0].pinId,
+      payload: {
+        action: -1
+      }
     };
 
     return this.httpClient.post<void>(ApiRoutes.Game.MakeMove, request, { headers: this.headers }).toPromise();

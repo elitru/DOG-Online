@@ -1,7 +1,7 @@
 import { Injectable } from '@angular/core';
 import { InteractionState } from '../models/game-state';
 import { Card } from '../models/game/card';
-import { CardType } from '../models/game/card-type';
+import { CardAction, CardType } from '../models/game/card-type';
 import { GameService } from './game.service';
 
 @Injectable({
@@ -9,8 +9,9 @@ import { GameService } from './game.service';
 })
 export class CardService {
   private _selectable: boolean = false;
-  private _selectedCard: Card;
+  private _selectedCard: Card = new Card('', CardType.StartThirteen);
   public jokerAction: CardType;
+  public cardAction: CardAction;
 
   constructor(private gameService: GameService) {
     this.gameService.interactionState$.subscribe(state => {
@@ -46,7 +47,14 @@ export class CardService {
     const currentState = this.gameService.interactionState$.getValue();
     
     if(currentState === InteractionState.SelectCardForMove) {
-      this.gameService.setInteractionState(InteractionState.SelectPlayer);
+
+      if(card.type === CardType.StartEleven || card.type === CardType.StartThirteen) {
+        this.gameService.setInteractionState(InteractionState.SelectCardAction);
+      }else if(card.type === CardType.Swap) {
+        this.gameService.setInteractionState(InteractionState.SelectTwoPinsForSwap);
+      }else {
+        this.gameService.setInteractionState(InteractionState.SelectPlayer);
+      }
     }
   }
 }

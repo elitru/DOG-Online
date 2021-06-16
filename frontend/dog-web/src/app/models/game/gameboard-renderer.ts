@@ -12,9 +12,11 @@ export class GameBoardRenderer {
     private pins: Pin[] = [];
     private actionFields: Map<number, Coordinate> = new Map<number, Coordinate>();
     private actions: number[] = [];
+    private selectedPinFields: number[] = [];
     private _clickedFields$: BehaviorSubject<number> = new BehaviorSubject<number>(0);
     private _selectedPin$: BehaviorSubject<Pin> = new BehaviorSubject<Pin>(null);
     public selectedPin: Pin;
+    public swapPin: Pin;
 
     constructor(
         private readonly canvasSize: number,
@@ -66,6 +68,12 @@ export class GameBoardRenderer {
         return !this.userPins.get(this.gameService.self.id).every(pin => pin.pinId !== pinId);
     }
 
+    public clearSelectedPins(): void {
+        this.selectedPin = null;
+        this.swapPin = null;
+        this.selectedPinFields = [];
+    }
+
     private async onSelectField(fieldId: number) {
         const pin = this.getPinForField(fieldId);
 
@@ -73,6 +81,16 @@ export class GameBoardRenderer {
 
         if(currentState === InteractionState.SelectPin && pin && this.isUserPin(pin.pinId)) {
             this._selectedPin$.next(pin);
+            return;
+        }
+
+        if(currentState === InteractionState.SelectTwoPinsForSwap && pin && this.isUserPin(pin.pinId)) {
+            if(!pin) {
+                this.selectedPin = pin;
+            }
+
+            this.swapPin = pin;
+            this.selectedPinFields.push(fieldId);
             return;
         }
 
@@ -142,6 +160,8 @@ export class GameBoardRenderer {
         this.ctx.imageSmoothingEnabled = false;
 
         this.drawBoardImage();
+        this.actions.forEach(fieldId => this.renderActionsOnField(fieldId, true));
+        this.selectedPinFields.forEach(fieldId => this.renderActionsOnField(fieldId, true, false));
         this.renderPins();
     }
 
@@ -328,7 +348,7 @@ export class GameBoardRenderer {
         fieldIds.forEach(id => this.renderActionsOnField(id));
     }
 
-    private renderActionsOnField(fieldId: number): void {
+    private renderActionsOnField(fieldId: number, justRender: boolean = false, withImage: boolean = true): void {
         const radius = FieldUtils.getActionRadius(fieldId, this.canvasSize);
         const { x, y } = this.fields.get(fieldId);
 
@@ -337,7 +357,7 @@ export class GameBoardRenderer {
         this.ctx.lineWidth = 10;
         this.ctx.beginPath();
         
-        if(!this.actions.includes(fieldId)) {
+        if(!this.actions.includes(fieldId) && !justRender) {
             this.actions.push(fieldId);
         }
 
@@ -352,6 +372,8 @@ export class GameBoardRenderer {
         this.ctx.font = `18pt Nunito`;
         this.ctx.fillStyle = '#000';
         
+        if(!withImage) return;
+
         if(FieldUtils.isTargetField(fieldId)) {
             this.ctx.fillText('👑', x + radius - 11, y + radius * 2 + 10);
         }else{

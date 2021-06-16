@@ -14,3 +14,9 @@ export interface SessionJoinRequest {
 export interface TeamJoinRequest {
     teamId: number;
 }
+
+export interface PlayCardRequest<TPayload> {
+    pinId: string;
+    cardId: string;
+    payload: TPayload;
+}

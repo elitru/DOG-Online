@@ -30,3 +30,10 @@ export const MoveCards: CardType[] = [
     CardType.StartEleven,
     CardType.StartThirteen
 ]
+
+export enum CardAction {
+    Start = -1,
+    Go1 = 1,
+    Go11 = 11,
+    Go13 = 13
+}
