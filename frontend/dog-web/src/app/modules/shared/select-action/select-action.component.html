@@ -1,6 +1,6 @@
 <div id="select-action" *ngIf="gameService.interactionState$.getValue() === 11">
     <div class="box">
-        <div (click)="onSelectAction(-1)" class="option" *ngIf="(cardService.selectedCard.type === '1_11' || cardService.selectedCard.type === '1_13') && gameService.canStart">
+        <div (click)="onSelectAction(-1)" class="option" *ngIf="(cardService.selectedCard.type === '1_11' || cardService.selectedCard.type === '1_13') && gameService.canStart && !gameService.isOwnPinOnStartField">
             Ansetzen
         </div>
         <div (click)="onSelectAction(1)" class="option" *ngIf="cardService.selectedCard.type === '1_11' || cardService.selectedCard.type === '1_13'">

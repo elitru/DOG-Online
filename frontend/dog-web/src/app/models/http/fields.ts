@@ -1,3 +1,5 @@
+import { PinColor } from "../game/pin";
+
 export interface Coordinate {
     x: number;
     y: number;
@@ -144,6 +146,27 @@ export class FieldUtils {
 
     public static isTargetField(fieldId: number): boolean {
         return fieldId <= -101;
+    }
+
+    public static getStartFieldIdForColor(color: PinColor): number {
+        let startFieldId: number;
+        
+        switch(color) {
+            case PinColor.RED:
+              startFieldId = 1;
+              break;
+            case PinColor.BLUE:
+                startFieldId = 15;
+                break;
+            case PinColor.GREEN:
+                startFieldId = 29;
+                break;
+            case PinColor.YELLOW:
+                startFieldId = 43;
+                break;
+          }
+
+          return startFieldId;
     }
 
     public static getScaledFields(canvasSize: number): Map<number, Coordinate> {

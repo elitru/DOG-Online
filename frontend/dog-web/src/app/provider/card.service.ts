@@ -2,14 +2,14 @@ import { Injectable } from '@angular/core';
 import { InteractionState } from '../models/game-state';
 import { Card } from '../models/game/card';
 import { CardAction, CardType } from '../models/game/card-type';
-import { GameService } from './game.service';
+import { GameService, Mocker } from './game.service';
 
 @Injectable({
   providedIn: 'root'
 })
 export class CardService {
   private _selectable: boolean = false;
-  private _selectedCard: Card = new Card('', CardType.StartThirteen);
+  private _selectedCard: Card = null;
   public jokerAction: CardType;
   public cardAction: CardAction;
 

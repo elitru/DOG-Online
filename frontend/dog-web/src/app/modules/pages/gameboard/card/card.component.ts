@@ -40,7 +40,20 @@ export class CardComponent implements OnInit {
       await this.gameService.swapCard(this.cardService.selectedCard.id, teamMate.id);
       this.cardService.select(null);
     }else if(currentState === InteractionState.SelectCardForMove) {
-      this.gameService.setInteractionState(InteractionState.SelectPin);
+      switch(this.card.type) {
+        case CardType.StartEleven:
+        case CardType.StartThirteen:
+          this.gameService.setInteractionState(InteractionState.SelectCardAction);
+          break;
+
+        case CardType.Joker:
+          this.gameService.setInteractionState(InteractionState.SelectJokerAction);
+          break;
+
+        default:
+          this.gameService.setInteractionState(InteractionState.SelectPin);
+          break;
+      }
     }
   }
 }

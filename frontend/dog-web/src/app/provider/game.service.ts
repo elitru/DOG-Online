@@ -13,8 +13,10 @@ import { PlayCardRequest, SessionCreateRequest, SessionJoinRequest, TeamJoinRequ
 import { SessionCreateResponse } from '../models/http/responses';
 import { Team } from '../models/http/team';
 import { User } from '../models/http/user';
+import { UserTurnMessage } from '../models/websockets/available-card-moves';
 import { DealCardsMessage } from '../models/websockets/deal-cards-message';
 import { MessageType } from '../models/websockets/message-type';
+import { MovePinMessage } from '../models/websockets/move-pin-message';
 import { StateChangedMessage } from '../models/websockets/state-changed-message';
 import { SwapCardMessage } from '../models/websockets/swap-card-message';
 import { UserTeamChangeMessage } from '../models/websockets/user-team-change-message';
@@ -22,6 +24,10 @@ import { UserUpdateMessage } from '../models/websockets/user-update-message';
 import { ApiRoutes } from '../utils/api-routes';
 import { CardService } from './card.service';
 import { SocketService } from './socket.service';
+
+export class Mocker {
+  public static CARDS: Card[] = [new Card('1', CardType.Eight), new Card('2', CardType.Five), new Card('3', CardType.Joker), new Card('4', CardType.Nine), new Card('5', CardType.Joker), new Card('6', CardType.Nine)];
+}
 
 type UserId = string;
 
@@ -46,7 +52,7 @@ export class GameService {
   private _users$: BehaviorSubject<User[]> = new BehaviorSubject<User[]>([]);
   private _teams$: BehaviorSubject<Team[]> = new BehaviorSubject<Team[]>([]);
   private _gameState$: BehaviorSubject<GameState> = new BehaviorSubject<GameState>(GameState.Lobby);
-  private _cards$: BehaviorSubject<Card[]> = new BehaviorSubject<Card[]>(/*[new Card('1', CardType.Eight), new Card('2', CardType.Five), new Card('3', CardType.Joker), new Card('4', CardType.Nine), new Card('5', CardType.Joker), new Card('6', CardType.Nine)]*/[]);
+  private _cards$: BehaviorSubject<Card[]> = new BehaviorSubject<Card[]>([]);
   private _interactionState$: BehaviorSubject<InteractionState> = new BehaviorSubject<InteractionState>(InteractionState.NoTurn);
 
   public infoMessage$: BehaviorSubject<string> = new BehaviorSubject<string>(Messages.SELECT_CARD_FOR_SWAP);
@@ -63,9 +69,28 @@ export class GameService {
     this.socketService.userTeamChange$.subscribe(msg => this.onTeamChanged(msg));
     this.socketService.dealCards$.subscribe(msg => this.onCardsChanged(msg));
     this.socketService.swapCards$.subscribe(msg => this.onSwapCard(msg));
-    this.socketService.userTurn$.subscribe(turn => { if(turn) this.onUserTurn(); });
+    this.socketService.userTurn$.subscribe(msg => this.onUserTurn(msg));
 
-    //this._pins.set('1', [new Pin('2', PinColor.BLUE, 5)])
+    //this._pins.set('1', [new Pin('2', PinColor.BLUE, -8)])
+  }
+
+  private onUserTurn(message: UserTurnMessage): void {
+    if(!message) return;
+
+    console.log(JSON.stringify(Array.from(message.cardMoves.entries())));
+
+    const cards = this._cards$.getValue().map(c => {
+      if(message.cardMoves.has(c.id)) {
+        c.isAvailable = true;
+      }else{
+        c.isAvailable = false;
+      }
+      return c;
+    });
+
+    this._cards$.next(cards);
+
+    this.setInteractionState(InteractionState.SelectCardForMove);
   }
 
   private onUserUpdate(userUpdateMessage: UserUpdateMessage): void {
@@ -124,12 +149,23 @@ export class GameService {
     this.setInteractionState(InteractionState.NoTurn);
   }
 
-  private onUserTurn(): void {
-    this.setInteractionState(InteractionState.SelectCardForMove);
-  }
-
   public setInteractionState(next: InteractionState): void {
     this._interactionState$.next(next);
+
+    switch(next) {
+      case InteractionState.SwapCardWithTeamMate:
+        this.infoMessage$.next(Messages.SELECT_CARD_FOR_SWAP);
+        break;
+      case InteractionState.NoTurn:
+        this.infoMessage$.next(Messages.NOT_YOUR_TURN);
+        break;
+      case InteractionState.SelectCardForMove:
+        this.infoMessage$.next(Messages.SELECT_CARD);
+        break;
+      case InteractionState.SelectPin:
+        this.infoMessage$.next(Messages.SELECT_PIN);
+        break;
+    }
   }
 
   public get users$(): Observable<User[]> {
@@ -160,11 +196,31 @@ export class GameService {
     return this._pins;
   }
 
+  public get movePins$(): Observable<MovePinMessage> {
+    return this.socketService.movePin$;
+  }
+
   public get headers(): HttpHeaders {
     return new HttpHeaders({
       'sessionId': this.sessionInfo.sessionId,
       'userId': this.self.id
     });
+  }
+
+  public get isOwnPinOnStartField(): boolean {
+    const pins = this._pins.get(this.self.id);
+    const color = pins[0].color;
+
+    switch(color) {
+      case PinColor.RED:
+        return !pins.every(pin => pin.fieldId !== 1);
+      case PinColor.BLUE:
+        return !pins.every(pin => pin.fieldId !== 15);
+      case PinColor.GREEN:
+        return !pins.every(pin => pin.fieldId !== 29);
+      case PinColor.YELLOW:
+        return !pins.every(pin => pin.fieldId !== 43);
+    }
   }
 
   public getTeamById(teamId: number): Team {
@@ -197,7 +253,7 @@ export class GameService {
   }
 
   public get canStart(): boolean {
-    return this.getPinsOnHomeFields.length > 0;
+    return this.getPinsOnHomeFields().length > 0;
   }
 
   public async createSession(userName: string, sessionName: string, password: string | null, publicSession: boolean): Promise<SessionCreateResponse> {
@@ -280,14 +336,17 @@ export class GameService {
   }
 
   public async startPin(cardId: string): Promise<void> {
-    const request: PlayCardRequest<{ action: number }> = {
+    const request: PlayCardRequest<string> = {
       cardId: cardId,
       pinId: this.getPinsOnHomeFields()[0].pinId,
-      payload: {
-        action: -1
-      }
+      payload: JSON.stringify(
+        {
+          action: -1
+        }
+      )
     };
 
-    return this.httpClient.post<void>(ApiRoutes.Game.MakeMove, request, { headers: this.headers }).toPromise();
+    await this.httpClient.post<void>(ApiRoutes.Game.MakeMove, request, { headers: this.headers }).toPromise();
+
   }
 }

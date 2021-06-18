@@ -30,7 +30,7 @@ export class LobbyComponent implements OnInit {
   }
 
   public get joinLink(): string {
-    return `${'http://192.168.43.75:4200'}/join/${this.sessionId}/${this.lobbyName}`;
+    return `${'http://192.168.0.33:4200'}/join/${this.sessionId}/${this.lobbyName}`;
   }
 
   public get canStart(): boolean {

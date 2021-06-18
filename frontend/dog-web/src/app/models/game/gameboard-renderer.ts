@@ -4,6 +4,7 @@ import { CardService } from "src/app/provider/card.service";
 import { GameService } from "src/app/provider/game.service";
 import { InteractionState } from "../game-state";
 import { Coordinate, FieldUtils } from "../http/fields";
+import { MovePinMessage } from "../websockets/move-pin-message";
 import { Pin, PinColor } from "./pin";
 
 export class GameBoardRenderer {
@@ -54,10 +55,34 @@ export class GameBoardRenderer {
         this.initFields();
 
         setTimeout(() => {
-            //this.movePinOnBoard(this.pins[0], 45, 'forward');
+            //this.movePinOnBoard(this.pins[0], 20, 'forward');
             //this.movePinToTarget(this.pins[0], -107, 'forward');
             //this.movePinToHome(this.pins[0]);
-        }, 1000); 
+            //this.movePinFromHomeToStart(this.pins[0])
+        }, 1000);
+
+        this.gameService.movePins$.subscribe(message => this.onMovePin(message));
+    }
+
+    private onMovePin(message: MovePinMessage): void {
+        if(!message) return;
+
+        const { pinId, targetFieldId, direction } = message;
+        const pin = this.pins.find(p => p.pinId === pinId);
+
+        if(pin.fieldId < 0 && pin.fieldId >= -16) {
+            console.log('1');
+            this.movePinFromHomeToStart(pin);
+        }else if(targetFieldId > 0) {
+            console.log('2');
+            this.movePinOnBoard(pin, targetFieldId, direction);
+        }else if(targetFieldId < 0 && targetFieldId >= -16) {
+            console.log('3');
+            this.movePinToHome(pin);
+        }else{
+            console.log('4');
+            this.movePinToTarget(pin, targetFieldId, direction);
+        }
     }
 
     public get selectedPin$(): Observable<Pin> {
@@ -266,7 +291,17 @@ export class GameBoardRenderer {
         }
     }
 
+    public async movePinFromHomeToStart(pin: Pin): Promise<void>  {
+        const { color } = pin;
+        const startFieldId: number = FieldUtils.getStartFieldIdForColor(color);
+        const coords: Coordinate = this.fields.get(startFieldId);
+        
+        await this.animateFromTo(pin, startFieldId, coords);
+    }
+
     private animateFromTo(pin: Pin, nextFieldId: number, to: Coordinate): Promise<void> {
+        if(!to) return;
+        
         const movement = 5 * FieldUtils.getScalingRatio(this.canvasSize);
         const promise = new Promise<void>((resolve) => {
             const interval = setInterval(() => {                

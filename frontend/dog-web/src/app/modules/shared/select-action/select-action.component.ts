@@ -25,6 +25,8 @@ export class SelectActionComponent implements OnInit {
     if(action === CardAction.Start) {
       await this.gameService.startPin(this.cardService.selectedCard.id);
       this.gameService.setInteractionState(InteractionState.NoTurn);
+      this.cardService.cardAction = null;
+      this.cardService.select(null);
       return;
     }
 

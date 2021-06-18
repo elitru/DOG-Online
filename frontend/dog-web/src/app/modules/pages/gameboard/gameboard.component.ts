@@ -90,7 +90,7 @@ export class GameboardComponent implements OnInit, AfterViewInit, OnDestroy {
   private initRenderer(): void {
     this.renderer = new GameBoardRenderer(
       // canvas size
-      (window.innerHeight - 50),
+      this.canvasSize,
       // html canvas element
       this.boardRef.nativeElement,
       // game board image element

@@ -4,5 +4,6 @@ export enum MessageType {
     UserTeamChangedUpdate = 2,
     DealCards = 3,
     SwapCard = 4,
-    UserTurn = 5
+    UserTurn = 5,
+    MovePin = 6
 };
