@@ -10,13 +10,11 @@ import com.tl.models.application.game.ws_messages.messages.AskToPlayCardMessage;
 import com.tl.models.application.game.ws_messages.messages.StateChangedMessage;
 import com.tl.models.application.game.ws_messages.messages.state_data_models.IngameStatePayload;
 import com.tl.models.application.user.SessionUser;
+import com.tl.models.client.requests.PlayCardRequest;
 import com.tl.models.client.responses.NinePinResponse;
 import com.tl.resources.GameSocketResource;
 
-import java.util.Arrays;
-import java.util.List;
-import java.util.Map;
-import java.util.Random;
+import java.util.*;
 import java.util.stream.Collectors;
 
 public class IngameState extends GameState {
@@ -38,7 +36,18 @@ public class IngameState extends GameState {
     private SessionUser getRandomPlayer() {
         int index = new Random().nextInt(4);
         var player = this.context.getGame().getUserForIndex(index);
+        System.out.println("Selected player " + player.getUsername() + " to start the round.");
         return player;
+    }
+
+    @Override
+    public void playCard(PlayCardRequest request, SessionUser user) {
+        this.context.getGame().playCard(this.context, request, user);
+    }
+
+    @Override
+    public List<Integer> calculateAllMoves(UUID pinId, UUID cardId, Optional<String> jokerIdent, SessionUser player) {
+        return this.context.getGame().calculateAllMoves(pinId, cardId, jokerIdent, player);
     }
 
     @Override

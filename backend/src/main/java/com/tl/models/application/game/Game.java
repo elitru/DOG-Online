@@ -3,16 +3,13 @@ package com.tl.models.application.game;
 import com.tl.models.application.game.field.BaseField;
 import com.tl.models.application.game.field.HomeField;
 import com.tl.models.application.game.field.StartField;
-import com.tl.models.application.game.field.TargetField;
 import com.tl.models.application.game.sub_states.IngameSubState;
 import com.tl.models.application.user.SessionUser;
+import com.tl.models.client.requests.PlayCardRequest;
 import lombok.*;
 
-import javax.swing.*;
 import javax.ws.rs.BadRequestException;
-import java.nio.channels.NotYetBoundException;
 import java.util.*;
-import java.util.stream.Collectors;
 
 @AllArgsConstructor
 @NoArgsConstructor
@@ -121,6 +118,12 @@ public class Game {
         }
     }
 
+    @SneakyThrows
+    public void playCard(GameSessionContext context, PlayCardRequest request, SessionUser user) {
+        var card = this.stack.getAllCards().get(request.getCardId());
+        card.makeMove(context, request.getPayload(), request.getPinId(), user);
+    }
+
     private List<Integer> getAllStraightWalkPositions(int amount, BaseField currentField, SessionUser currentPlayer) {
 
         // make sure we're not on a home field
@@ -176,6 +179,7 @@ public class Game {
 
                 // check if not occupied
                 if (free) {
+                    // not occupied --> add target field as well
                     all.add(field.getFirstTargetField().getNodeId() - remainingFields);
                 }
             }

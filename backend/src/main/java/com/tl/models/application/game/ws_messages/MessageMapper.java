@@ -36,6 +36,10 @@ public class MessageMapper {
                 var parsed = mapper.readValue(json, SwapCardMessage.class);
                 return parsed;
             }
+            case MovePin: {
+                var parsed = mapper.readValue(json, MovePinMessage.class);
+                return parsed;
+            }
 
             default:
                 return null;

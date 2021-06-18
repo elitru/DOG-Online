@@ -2,8 +2,10 @@ package com.tl.models.application.game.states;
 
 import com.tl.models.application.game.GameSessionContext;
 import com.tl.models.application.user.SessionUser;
+import com.tl.models.client.requests.PlayCardRequest;
 
 import javax.ws.rs.BadRequestException;
+import java.util.List;
 import java.util.Optional;
 import java.util.UUID;
 
@@ -37,4 +39,12 @@ public abstract class GameState {
     }
 
     public abstract void sendWSInitMessage();
+
+    public void playCard(PlayCardRequest request, SessionUser user) {
+        throw new BadRequestException(BAD_STATE);
+    }
+
+    public List<Integer> calculateAllMoves(UUID pinId, UUID cardId, Optional<String> jokerIdent, SessionUser player) {
+        throw new BadRequestException(BAD_STATE);
+    }
 }

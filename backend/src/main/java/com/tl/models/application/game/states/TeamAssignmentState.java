@@ -78,6 +78,10 @@ public class TeamAssignmentState extends GameState {
         for (Team t : availableTeams) {
             var nextPlayers = getNextUnassigned(t.remainingCapacity());
             nextPlayers.forEach(t::addUserToTeam);
+            // notify all players that those players switched to this team
+            for (SessionUser p : nextPlayers) {
+                GameSocketResource.makeGameBroadcast(context, new UserChangeTeamMessage(p.getId(), t.getTeamId(), 0));
+            }
         }
     }
 }
