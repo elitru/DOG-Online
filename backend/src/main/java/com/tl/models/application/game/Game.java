@@ -1,5 +1,8 @@
 package com.tl.models.application.game;
 
+import com.tl.models.application.game.cards.BaseCard;
+import com.tl.models.application.game.cards.JokerCard;
+import com.tl.models.application.game.cards.StartCard;
 import com.tl.models.application.game.field.BaseField;
 import com.tl.models.application.game.field.HomeField;
 import com.tl.models.application.game.field.StartField;
@@ -20,6 +23,7 @@ public class Game {
     private Map<SessionUser, List<NinePin>> ninepins = new HashMap<>();
     private Map<SessionUser, StartField> startFields = new HashMap<>();
     private Map<Integer, Team> teams = new HashMap<>();
+    private Map<SessionUser, List<BaseCard>> cards = new HashMap<>();
     private CardStack stack;
     private GameBoard board;
     private IngameSubState state;
@@ -124,7 +128,48 @@ public class Game {
         card.makeMove(context, request.getPayload(), request.getPinId(), user);
     }
 
-    private List<Integer> getAllStraightWalkPositions(int amount, BaseField currentField, SessionUser currentPlayer) {
+    public Map<UUID, List<UUID>> getCardMovesForUser(SessionUser user) {
+        var cards = this.cards.get(user);
+        Map<UUID, List<UUID>> result = new HashMap<>();
+        for (BaseCard c : cards) {
+            for (NinePin p : this.ninepins.get(user)) {
+                var res = this.isMovementPossible(c, p, user);
+                if (res) {
+                    var prev = result.getOrDefault(c.getCardId(), new ArrayList<>());
+                    prev.add(p.getPinId());
+                    result.put(c.getCardId(), prev);
+                }
+            }
+        }
+        return result;
+    }
+
+    private boolean isMovementPossible(BaseCard c, NinePin p, SessionUser user) {
+        return c.isMovePossible(p, this, user);
+    }
+
+    public long amountOfPinsAtHome(SessionUser user) {
+        return this.ninepins.get(user).stream()
+                .filter(np -> np.getCurrentLocation().getNodeId() < 0 && np.getCurrentLocation().getNodeId() >= -16)
+                .count();
+    }
+
+    public long amountOfPinsIngame(SessionUser user) {
+        return this.ninepins.get(user).stream()
+                .filter(np -> np.getCurrentLocation().getNodeId() > 0)
+                .count();
+    }
+
+    private <T> boolean isTypePresent(SessionUser user, Class<T> search) {
+        for (BaseCard b : this.cards.get(user)) {
+            if (search.isInstance(b)) {
+                return true;
+            }
+        }
+        return false;
+    }
+
+    public List<Integer> getAllStraightWalkPositions(int amount, BaseField currentField, SessionUser currentPlayer) {
 
         // make sure we're not on a home field
         if (currentField instanceof HomeField) {
@@ -133,6 +178,30 @@ public class Game {
 
         // Calculate all nodes on the path --> start with the first field after the current field
         List<Integer> path = new ArrayList<>();
+
+        if (amount < 0) {
+            BaseField currentNode = currentField;
+            for (int i = 0; i < Math.abs(amount); i++) {
+                currentNode = currentNode.getPrevious().get();
+                path.add(currentNode.getNodeId());
+            }
+            var start = path.stream().filter(integer -> Arrays.stream(GameBoard.START_FIELDS).anyMatch(integer::equals)).findFirst();
+
+            BaseField finalCurrentNode = currentNode;
+
+            return start.map(fieldId -> {
+                List<Integer> all = new ArrayList<>();
+                StartField field = this.board.getCircleFieldById(fieldId);
+
+                // start field is not occupied by pin of the same color --> add the end field
+                if (!this.isStartFieldOccupiedByPlayerOfSameColor(field)) {
+                    all.add(finalCurrentNode.getNodeId());
+                }
+                return all;
+            }).orElse(new ArrayList<>() {{
+                add(finalCurrentNode.getNodeId());
+            }});
+        }
 
         for (int i = currentField.getNodeId() + 1; i <= currentField.getNodeId() + amount; i++) {
             int index = this.getRealIndex(i);
@@ -190,7 +259,7 @@ public class Game {
 
     }
 
-    private boolean isStartFieldOccupiedByPlayerOfSameColor(BaseField startField) {
+    public boolean isStartFieldOccupiedByPlayerOfSameColor(BaseField startField) {
         for (Map.Entry<SessionUser, List<NinePin>> pin : this.ninepins.entrySet()) {
             if (pin.getValue().stream().map(NinePin::getCurrentLocation).anyMatch(b -> b.equals(startField))) {
                 // found start field within the list of ninepins

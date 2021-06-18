@@ -58,4 +58,9 @@ public class StartCard extends BaseCard<StartCardPayload> {
     public Class<StartCardPayload> getType() {
         return StartCardPayload.class;
     }
+
+    @Override
+    public boolean isMovePossible(NinePin pin, Game game, SessionUser user) {
+        return !game.isStartFieldOccupiedByPlayerOfSameColor(game.getStartFields().get(user)) && game.amountOfPinsAtHome(user) > 0;
+    }
 }

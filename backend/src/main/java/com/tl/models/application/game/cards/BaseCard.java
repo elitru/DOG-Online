@@ -4,6 +4,7 @@ import com.fasterxml.jackson.databind.JsonNode;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import com.tl.models.application.game.Game;
 import com.tl.models.application.game.GameSessionContext;
+import com.tl.models.application.game.NinePin;
 import com.tl.models.application.game.cards.payloads.StartCardPayload;
 import com.tl.models.application.user.SessionUser;
 import com.tl.models.client.responses.CardResponse;
@@ -45,4 +46,6 @@ public abstract class BaseCard<T> {
     }
 
     public abstract Class<T> getType();
+
+    public abstract boolean isMovePossible(NinePin pin, Game game, SessionUser user);
 }
