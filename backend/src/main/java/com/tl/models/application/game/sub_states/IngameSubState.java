@@ -19,7 +19,11 @@ public abstract class IngameSubState {
         throw new BadRequestException(BAD_STATE);
     }
 
-    public void swapCard(UUID fromPlayer, UUID toPlayer, UUID cardId) {
+    public void announcePlayerIsToPlay(SessionUser user) {
+        throw new BadRequestException(BAD_STATE);
+    }
+
+        public void swapCard(UUID fromPlayer, UUID toPlayer, UUID cardId) {
         throw new BadRequestException(BAD_STATE);
     }
 

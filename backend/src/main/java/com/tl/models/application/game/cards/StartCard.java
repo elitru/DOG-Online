@@ -61,6 +61,7 @@ public class StartCard extends BaseCard<StartCardPayload> {
 
     @Override
     public boolean isMovePossible(NinePin pin, Game game, SessionUser user) {
-        return !game.isStartFieldOccupiedByPlayerOfSameColor(game.getStartFields().get(user)) && game.amountOfPinsAtHome(user) > 0;
+        System.out.println("Startfield occupied: " + game.isStartFieldOccupiedByPlayerOfSameColor(game.getStartFields().get(user)));
+        return !game.isStartFieldOccupiedByPlayerOfSameColor(game.getStartFields().get(user)) && pin.getCurrentLocation().getNodeId() < 0 && pin.getCurrentLocation().getNodeId() >= -16;
     }
 }

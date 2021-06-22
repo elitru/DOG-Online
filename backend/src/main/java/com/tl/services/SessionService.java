@@ -23,10 +23,10 @@ import java.util.UUID;
 @ApplicationScoped
 public class SessionService {
 
-    private Map<UUID, GameSessionContext> sessions;
+    Map<UUID, GameSessionContext> sessions;
 
     @Inject
-    private void initMap() {
+    void initMap() {
         this.sessions = new HashMap<>();
     }
 

@@ -25,7 +25,9 @@ public class PlayRoundSubState extends IngameSubState {
         this.announcePlayerIsToPlay(startUser);
     }
 
-    private void announcePlayerIsToPlay(SessionUser user) {
+    @Override
+    public void announcePlayerIsToPlay(SessionUser user) {
+        System.out.printf("User %s is now to play!\n", user.getUsername());
         this.context.getClients().get(user.getId()).getWebsocketSession().getAsyncRemote().sendObject(new AskToPlayCardMessage(context.getGame().getCardMovesForUser(user)));
     }
 

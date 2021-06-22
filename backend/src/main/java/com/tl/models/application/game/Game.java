@@ -126,7 +126,29 @@ public class Game {
     public void playCard(GameSessionContext context, PlayCardRequest request, SessionUser user) {
         var card = this.stack.getAllCards().get(request.getCardId());
         card.makeMove(context, request.getPayload(), request.getPinId(), user);
+        // remove card from stack
+        this.stack.playCard(card.getCardId());
+        // remove from cards hashmap
+        this.cards.get(user).removeIf(c -> c.getCardId().equals(card.getCardId()));
+        // announce next player
+        var p = this.getNextUser(user);
+        this.getState().announcePlayerIsToPlay(p);
     }
+
+    private SessionUser getNextUser(SessionUser s) {
+        List<SessionUser> all = new ArrayList<>();
+
+        all.add(this.teams.get(1).getMembers().get(0));
+        all.add(this.teams.get(2).getMembers().get(0));
+        all.add(this.teams.get(1).getMembers().get(1));
+        all.add(this.teams.get(2).getMembers().get(1));
+
+        int index = all.indexOf(s);
+        int nextIndex = (index + 1) % 4;
+
+        return all.get(nextIndex);
+    }
+
 
     public Map<UUID, List<UUID>> getCardMovesForUser(SessionUser user) {
         var cards = this.cards.get(user);
