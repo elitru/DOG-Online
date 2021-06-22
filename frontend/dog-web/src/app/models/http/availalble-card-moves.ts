@@ -7,6 +7,10 @@ export class AvailableCardMoves {
 
     }
 
+    public get canMakeMove(): boolean {
+        return !Array.from(this.cardMoves.values()).every(({length}) => length === 0);
+    }
+
     public static fromApi({ cardMoves }: AvailableCardMovesDTO): AvailableCardMoves {
         const moves = new Map<string, string[]>();
 

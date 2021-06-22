@@ -77,6 +77,8 @@ export class SocketService {
 
       case MessageTypeDTO.UserTurn:
         {
+          console.log('turn');
+          console.log(wsData);
           const message: UserTurnMessage = AvailableCardMoves.fromApi(wsData as UserTurnMessageDTO);
           this.userTurn$.next(message);
           break;

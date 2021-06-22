@@ -76,11 +76,21 @@ export class GameService {
 
   private onUserTurn(message: UserTurnMessage): void {
     if(!message) return;
-
-    console.log(JSON.stringify(Array.from(message.cardMoves.entries())));
+    console.log(message.canMakeMove);
+    
+    if(!message.canMakeMove) {
+      const cards = this._cards$.getValue().map(c => {
+        c.isAvailable = true;
+        return c;
+      });
+  
+      this._cards$.next(cards);
+      this.setInteractionState(InteractionState.SelectCardForDrop);
+      return;
+    }
 
     const cards = this._cards$.getValue().map(c => {
-      if(message.cardMoves.has(c.id)) {
+      if(message.cardMoves.has(c.id) || c.type === CardType.Joker) {
         c.isAvailable = true;
       }else{
         c.isAvailable = false;
@@ -89,7 +99,6 @@ export class GameService {
     });
 
     this._cards$.next(cards);
-
     this.setInteractionState(InteractionState.SelectCardForMove);
   }
 
@@ -164,6 +173,9 @@ export class GameService {
         break;
       case InteractionState.SelectPin:
         this.infoMessage$.next(Messages.SELECT_PIN);
+        break;
+      case InteractionState.SelectCardForDrop:
+        this.infoMessage$.next(Messages.DROP_CARD);
         break;
     }
   }
@@ -324,10 +336,10 @@ export class GameService {
     return this.httpClient.post<number[]>(ApiRoutes.Game.GetMoves, request,  { headers: this.headers }).toPromise();
   }
 
-  public async makeMove(pinId: string, card: Card, fieldId: number, action: string = ''): Promise<void> {
+  public async makeMove(pinId: string, { id }: Card, fieldId: number, action: string = ''): Promise<void> {
     const request: any = {
       pinId,
-      cardId: card.id,
+      cardId: id,
       action,
       fieldId
     };
@@ -346,7 +358,15 @@ export class GameService {
       )
     };
 
-    await this.httpClient.post<void>(ApiRoutes.Game.MakeMove, request, { headers: this.headers }).toPromise();
+    await this.playCard<string, void>(ApiRoutes.Game.MakeMove, request);
+  }
 
+  public async dropCard(card: Card): Promise<void> {
+    
+    this.setInteractionState(InteractionState.NoTurn);
+  }
+
+  private async playCard<T, R>(route: string, request: PlayCardRequest<T>): Promise<R> {
+    return this.httpClient.post<R>(route, request, { headers: this.headers }).toPromise();
   }
 }

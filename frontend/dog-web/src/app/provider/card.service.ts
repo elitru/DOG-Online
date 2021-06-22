@@ -15,7 +15,7 @@ export class CardService {
 
   constructor(private gameService: GameService) {
     this.gameService.interactionState$.subscribe(state => {
-      if(state === InteractionState.SelectCardForMove || state === InteractionState.SwapCardWithTeamMate) {
+      if(state === InteractionState.SelectCardForMove || state === InteractionState.SwapCardWithTeamMate || state === InteractionState.SelectCardForDrop) {
         this._selectedCard = null;
         this._selectable = true;
         return;
@@ -47,14 +47,17 @@ export class CardService {
     const currentState = this.gameService.interactionState$.getValue();
     
     if(currentState === InteractionState.SelectCardForMove) {
-
       if(card.type === CardType.StartEleven || card.type === CardType.StartThirteen) {
         this.gameService.setInteractionState(InteractionState.SelectCardAction);
       }else if(card.type === CardType.Swap) {
         this.gameService.setInteractionState(InteractionState.SelectTwoPinsForSwap);
+      }else if(card.type === CardType.Joker) {
+        this.gameService.setInteractionState(InteractionState.SelectJokerAction);
       }else {
         this.gameService.setInteractionState(InteractionState.SelectPlayer);
       }
+    }else if(currentState === InteractionState.SelectCardForDrop) {
+      this.gameService.dropCard(card);
     }
   }
 }

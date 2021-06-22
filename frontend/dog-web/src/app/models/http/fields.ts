@@ -170,6 +170,7 @@ export class FieldUtils {
     }
 
     public static getScaledFields(canvasSize: number): Map<number, Coordinate> {
+        console.log('scaled -> ' + canvasSize);
         const scaleRatio = canvasSize / this.BaseScreenSize;
         const result: Map<number, Coordinate> = new Map<number, Coordinate>();
 

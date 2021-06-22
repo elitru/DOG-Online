@@ -32,7 +32,9 @@ export class CardComponent implements OnInit {
     this.cardService.select(this.card);
 
     const currentState = this.gameService.interactionState$.getValue();
-
+    console.log('state -> ' + currentState);
+    console.log(this.card.type);
+    
     if(currentState === InteractionState.SwapCardWithTeamMate) {
       const team = this.gameService.getTeamForPlayer(this.gameService.self.id);
       const teamMate = team.members.filter(p => p.id !== this.gameService.self.id)[0];
@@ -47,6 +49,7 @@ export class CardComponent implements OnInit {
           break;
 
         case CardType.Joker:
+          console.log('is joker');
           this.gameService.setInteractionState(InteractionState.SelectJokerAction);
           break;
 

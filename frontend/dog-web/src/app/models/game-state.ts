@@ -16,5 +16,6 @@ export enum InteractionState {
     SelectJokerAction = 9,
     SelectTwoPinsForSwap = 10,
     SelectCardAction = 11,
-    StartPin = 12
+    StartPin = 12,
+    SelectCardForDrop = 13
 }
