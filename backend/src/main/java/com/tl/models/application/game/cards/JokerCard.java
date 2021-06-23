@@ -19,9 +19,10 @@ public class JokerCard extends BaseCard<JokerPayload>{
     }
 
     @Override
-    public void makeMove(GameSessionContext currentGame, JokerPayload payload, UUID pinId, SessionUser user) {
+    public int makeMove(GameSessionContext currentGame, JokerPayload payload, UUID pinId, SessionUser user) {
         var card = this.fromString(payload.cardType);
-        card.makeMove(currentGame, payload.cardPayload, pinId, user);
+        System.out.println("Parsed card: " + card.getClass());
+        return card.makeMove(currentGame, payload.cardPayload, pinId, user);
     }
 
     @Override

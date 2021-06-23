@@ -19,7 +19,7 @@ public class SwapCard extends BaseCard<SwapCardPayload>{
     }
 
     @Override
-    public void makeMove(GameSessionContext currentGame, SwapCardPayload payload, UUID pinId, SessionUser user) {
+    public int makeMove(GameSessionContext currentGame, SwapCardPayload payload, UUID pinId, SessionUser user) {
         var fromPin = currentGame.getGame().getNinePinById(payload.firstPin);
         var toPin = currentGame.getGame().getNinePinById(payload.secondPin);
 
@@ -34,6 +34,7 @@ public class SwapCard extends BaseCard<SwapCardPayload>{
 
         fromPin.broadcastMovement(currentGame, fromLocationId);
         toPin.broadcastMovement(currentGame, toLocationId);
+        return -20000;
     }
 
     @Override
@@ -46,7 +47,7 @@ public class SwapCard extends BaseCard<SwapCardPayload>{
         if (game.amountOfPinsIngame(user) > 1) {
             return new ArrayList<>(Arrays.asList(-40000));
         } else {
-            return new ArrayList<>(Arrays.asList(-30000));
+            return new ArrayList<>();
         }
     }
 }

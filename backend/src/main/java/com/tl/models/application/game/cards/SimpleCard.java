@@ -21,8 +21,8 @@ public class SimpleCard extends BaseCard<BaseCardPayload>{
     }
 
     @Override
-    public void makeMove(GameSessionContext currentGame, BaseCardPayload payload, UUID pinId, SessionUser user) {
-        super.makeLinearMove(currentGame, pinId, user, payload.targetField);
+    public int makeMove(GameSessionContext currentGame, BaseCardPayload payload, UUID pinId, SessionUser user) {
+        return super.makeLinearMove(currentGame, pinId, user, payload.targetField);
     }
 
     @Override

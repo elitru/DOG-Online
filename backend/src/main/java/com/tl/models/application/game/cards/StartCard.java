@@ -20,15 +20,13 @@ public class StartCard extends BaseCard<StartCardPayload> {
     }
 
     @Override
-    public void makeMove(GameSessionContext currentGame, StartCardPayload payload, UUID pinId, SessionUser user) {
+    public int makeMove(GameSessionContext currentGame, StartCardPayload payload, UUID pinId, SessionUser user) {
         switch (payload.action) {
             case -1:
-                this.handleStart(currentGame, pinId, user);
-                break;
+                return this.handleStart(currentGame, pinId, user);
             case 11:
             case 13:
-                super.makeLinearMove(currentGame, pinId, user, payload.targetField);
-                break;
+                return super.makeLinearMove(currentGame, pinId, user, payload.targetField);
             default:
                 throw new BadRequestException("Received invalid amount for start card");
         }
@@ -62,7 +60,8 @@ public class StartCard extends BaseCard<StartCardPayload> {
         return StartCardPayload.class;
     }
 
-    private void handleStart(GameSessionContext currentGame, UUID pinId, SessionUser user) {
+    private int handleStart(GameSessionContext currentGame, UUID pinId, SessionUser user) {
+        System.out.println("handling start");
         // get first start pin of user
         var pin = this.getPinFromHomeFieldForUser(currentGame.getGame(), user).orElseThrow(BadRequestException::new);
         // save previous location
@@ -71,6 +70,8 @@ public class StartCard extends BaseCard<StartCardPayload> {
         pin.setCurrentLocation(currentGame.getGame().getStartFields().get(user));
         // broadcast movement
         pin.broadcastMovement(currentGame, previousLocation);
+        // return id of start field
+        return currentGame.getGame().getStartFields().get(user).getNodeId();
     }
 
     private Optional<NinePin> getPinFromHomeFieldForUser(Game currentGame, SessionUser user) {

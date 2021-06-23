@@ -132,11 +132,45 @@ public class Game {
     public void playCard(GameSessionContext context, PlayCardRequest request, SessionUser user) {
         var card = this.stack.getAllCards().get(request.getCardId());
         card.makeMove(context, request.getPayload(), request.getPinId(), user);
+        // check to see if there is _another_ pin with the same location
+        var maybeThrow = this.getPinForLocation(0, request.getPinId());
+
+        maybeThrow.ifPresent(p -> {
+            // send message that this pin needs to be removed
+            var removedUser = this.getUserForPin(p);
+            var previousLocation = p.getCurrentLocation().getNodeId();
+
+            p.setCurrentLocation(this.getNextFreeHomeFieldForUser(removedUser));
+            p.broadcastMovement(context, previousLocation);
+        });
+
         // remove card
         this.removeCardForPlayer(user, card.getCardId());
         // announce next player or swap
         var p = this.getNextUser(user);
         this.announceNextOrSwapState(context, p);
+    }
+
+    private BaseField getNextFreeHomeFieldForUser(SessionUser user) {
+        BaseField fh = this.startFields.get(user).getFirstHomeField();
+        do {
+            if (!this.isFieldOccupiedByPin(fh)) {
+                return fh;
+            }
+            fh = fh.getNext().get();
+        } while (true);
+    }
+
+    private SessionUser getUserForPin(NinePin p) {
+        return this.ninepins.entrySet()
+                .stream()
+                .filter(e -> e.getValue().contains(p))
+                .map(Map.Entry::getKey).findFirst()
+                .get();
+    }
+
+    private Optional<NinePin> getPinForLocation(int location, UUID skipId) {
+        return this.ninepins.values().stream().flatMap(List::stream).filter(np -> !np.getPinId().equals(skipId) && np.getCurrentLocation().getNodeId() == location).findFirst();
     }
 
     public void dropCard(GameSessionContext context, DropCardRequest request, SessionUser user) {

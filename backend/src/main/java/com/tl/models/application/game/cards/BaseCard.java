@@ -31,24 +31,20 @@ public abstract class BaseCard<T> {
         this.stringRepresentation = stringRepresentation;
     }
 
-    public abstract void makeMove(GameSessionContext currentGame, T payload, UUID pinId, SessionUser user);
+    public abstract int makeMove(GameSessionContext currentGame, T payload, UUID pinId, SessionUser user);
 
     @SneakyThrows
-    public void makeMove(GameSessionContext currentGame, JsonNode node, UUID pinId, SessionUser user) {
-        this.makeMove(currentGame, m.treeToValue(node, this.getType()), pinId, user);
+    public int makeMove(GameSessionContext currentGame, String node, UUID pinId, SessionUser user) {
+        return this.makeMove(currentGame, m.readValue(node, this.getType()), pinId, user);
     }
 
-    @SneakyThrows
-    public void makeMove(GameSessionContext currentGame, String node, UUID pinId, SessionUser user) {
-        this.makeMove(currentGame, m.readValue(node, this.getType()), pinId, user);
-    }
-
-    protected void makeLinearMove(GameSessionContext currentGame, UUID pinId, SessionUser user, int to) {
+    protected int makeLinearMove(GameSessionContext currentGame, UUID pinId, SessionUser user, int to) {
         var pin = currentGame.getGame().getNinePinById(pinId);
         int prev = pin.getCurrentLocation().getNodeId();
         var targetField = currentGame.getGame().getFieldForFieldId(to, user);
         pin.setCurrentLocation(targetField);
         pin.broadcastMovement(currentGame, prev);
+        return targetField.getNodeId();
     }
 
     public CardResponse toResponse() {
