@@ -10,6 +10,7 @@ import com.tl.models.application.game.ws_messages.messages.AskToPlayCardMessage;
 import com.tl.models.application.game.ws_messages.messages.StateChangedMessage;
 import com.tl.models.application.game.ws_messages.messages.state_data_models.IngameStatePayload;
 import com.tl.models.application.user.SessionUser;
+import com.tl.models.client.requests.DropCardRequest;
 import com.tl.models.client.requests.PlayCardRequest;
 import com.tl.models.client.responses.NinePinResponse;
 import com.tl.resources.GameSocketResource;
@@ -43,6 +44,11 @@ public class IngameState extends GameState {
     @Override
     public void playCard(PlayCardRequest request, SessionUser user) {
         this.context.getGame().playCard(this.context, request, user);
+    }
+
+    @Override
+    public void dropCard(DropCardRequest request, SessionUser user) {
+        this.context.getGame().dropCard(this.context, request, user);
     }
 
     @Override

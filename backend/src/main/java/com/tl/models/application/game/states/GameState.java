@@ -2,6 +2,7 @@ package com.tl.models.application.game.states;
 
 import com.tl.models.application.game.GameSessionContext;
 import com.tl.models.application.user.SessionUser;
+import com.tl.models.client.requests.DropCardRequest;
 import com.tl.models.client.requests.PlayCardRequest;
 
 import javax.ws.rs.BadRequestException;
@@ -41,6 +42,10 @@ public abstract class GameState {
     public abstract void sendWSInitMessage();
 
     public void playCard(PlayCardRequest request, SessionUser user) {
+        throw new BadRequestException(BAD_STATE);
+    }
+
+    public void dropCard(DropCardRequest request, SessionUser user) {
         throw new BadRequestException(BAD_STATE);
     }
 

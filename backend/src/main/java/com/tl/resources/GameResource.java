@@ -1,6 +1,7 @@
 package com.tl.resources;
 
 
+import com.tl.models.client.requests.DropCardRequest;
 import com.tl.models.client.requests.MakeMoveRequest;
 import com.tl.models.client.requests.PlayCardRequest;
 import com.tl.models.client.requests.SwapCardRequest;
@@ -61,5 +62,14 @@ public class GameResource {
         session.getState().playCard(request, session.getClients().get(UUID.fromString(userId)));
     }
 
+    @POST
+    @Consumes(MediaType.APPLICATION_JSON)
+    @Produces(MediaType.APPLICATION_JSON)
+    @Path("/drop-card")
+    public void dropCard(@HeaderParam("sessionId") String sessionId, @HeaderParam("userId") String userId, DropCardRequest request) {
+        Validation.checkForNull(request);
+        var session = this.sessionService.getSessionOrThrow(UUID.fromString(sessionId));
+        session.getState().dropCard(request, session.getClients().get(UUID.fromString(userId)));
+    }
 
 }

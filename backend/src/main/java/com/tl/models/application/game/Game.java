@@ -10,6 +10,7 @@ import com.tl.models.application.game.sub_states.DealCardsSubState;
 import com.tl.models.application.game.sub_states.IngameSubState;
 import com.tl.models.application.game.sub_states.SwapCardsSubState;
 import com.tl.models.application.user.SessionUser;
+import com.tl.models.client.requests.DropCardRequest;
 import com.tl.models.client.requests.PlayCardRequest;
 import lombok.*;
 
@@ -128,13 +129,30 @@ public class Game {
     public void playCard(GameSessionContext context, PlayCardRequest request, SessionUser user) {
         var card = this.stack.getAllCards().get(request.getCardId());
         card.makeMove(context, request.getPayload(), request.getPinId(), user);
-        // remove card from stack
-        this.stack.playCard(card.getCardId());
-        // remove from cards hashmap
-        this.cards.get(user).removeIf(c -> c.getCardId().equals(card.getCardId()));
-        // announce next player
+        // remove card
+        this.removeCardForPlayer(user, card.getCardId());
+        // announce next player or swap
         var p = this.getNextUser(user);
-        
+        this.announceNextOrSwapState(context, p);
+    }
+
+    public void dropCard(GameSessionContext context, DropCardRequest request, SessionUser user) {
+        var card = this.stack.getAllCards().get(request.getCardId());
+        // remove the card for the player without moving any pins
+        this.removeCardForPlayer(user, card.getCardId());
+        // announce next player or swap
+        var p = this.getNextUser(user);
+        this.announceNextOrSwapState(context, p);
+    }
+
+    private void removeCardForPlayer(SessionUser user, UUID cardId) {
+        // remove card from stack
+        this.stack.playCard(cardId);
+        // remove from cards hashmap
+        this.cards.get(user).removeIf(c -> c.getCardId().equals(cardId));
+    }
+
+    private void announceNextOrSwapState(GameSessionContext context, SessionUser p) {
         if (!this.getState().registerCardPlayed()) {
             // there are still cards to be played --> just announce the next player
             this.getState().announcePlayerIsToPlay(p);
