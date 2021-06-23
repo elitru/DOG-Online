@@ -26,6 +26,9 @@ public class GameBoard {
         if (currentRef.getNodeId() == id) {
             return currentRef;
         }
+        if (currentRef.getNext().isEmpty()) {
+            System.out.println("found empty; current node is " + currentRef.getNodeId());
+        }
         return this.getCircleFieldById(id, currentRef.getNext().get());
     }
 
@@ -56,6 +59,9 @@ public class GameBoard {
 
             if (prev == null) {
                 this.reference = startField;
+            } else {
+                prev.setNext(startField);
+                startField.setPrevious(prev);
             }
 
             prev = startField;

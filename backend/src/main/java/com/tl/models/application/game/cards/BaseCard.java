@@ -41,6 +41,7 @@ public abstract class BaseCard<T> {
     protected int makeLinearMove(GameSessionContext currentGame, UUID pinId, SessionUser user, int to) {
         var pin = currentGame.getGame().getNinePinById(pinId);
         int prev = pin.getCurrentLocation().getNodeId();
+        System.out.println("Requested field id is: " + to);
         var targetField = currentGame.getGame().getFieldForFieldId(to, user);
         pin.setCurrentLocation(targetField);
         pin.broadcastMovement(currentGame, prev);

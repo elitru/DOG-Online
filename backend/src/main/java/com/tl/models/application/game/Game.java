@@ -131,6 +131,7 @@ public class Game {
     @SneakyThrows
     public void playCard(GameSessionContext context, PlayCardRequest request, SessionUser user) {
         var card = this.stack.getAllCards().get(request.getCardId());
+        System.out.println("now playing card " + card.getStringRepresentation() + " with payload " + request.getPayload());
         card.makeMove(context, request.getPayload(), request.getPinId(), user);
         // check to see if there is _another_ pin with the same location
         var maybeThrow = this.getPinForLocation(0, request.getPinId());

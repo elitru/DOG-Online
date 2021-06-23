@@ -24,7 +24,7 @@ public class MovePinMessage extends Message {
 
     @JsonProperty
     @JsonSerialize(using = PinDirectionSerializer.class)
-    private PinDirection pinDirection;
+    private PinDirection direction;
 
     @SneakyThrows
     @Override
@@ -32,10 +32,10 @@ public class MovePinMessage extends Message {
         return new ObjectMapper().writeValueAsString(this);
     }
 
-    public MovePinMessage(UUID pinId, int targetFieldId, PinDirection pinDirection) {
+    public MovePinMessage(UUID pinId, int targetFieldId, PinDirection direction) {
         super(MessageType.MovePin);
         this.pinId = pinId;
         this.targetFieldId = targetFieldId;
-        this.pinDirection = pinDirection;
+        this.direction = direction;
     }
 }
