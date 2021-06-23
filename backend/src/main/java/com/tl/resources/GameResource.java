@@ -2,7 +2,7 @@ package com.tl.resources;
 
 
 import com.tl.models.client.requests.DropCardRequest;
-import com.tl.models.client.requests.MakeMoveRequest;
+import com.tl.models.client.requests.GetMovesRequest;
 import com.tl.models.client.requests.PlayCardRequest;
 import com.tl.models.client.requests.SwapCardRequest;
 import com.tl.models.client.responses.MoveResponse;
@@ -10,10 +10,8 @@ import com.tl.services.SessionService;
 import com.tl.validation.Validation;
 
 import javax.inject.Inject;
-import javax.validation.Valid;
 import javax.ws.rs.*;
 import javax.ws.rs.core.MediaType;
-import java.util.Optional;
 import java.util.UUID;
 
 @Path("/game")
@@ -45,10 +43,10 @@ public class GameResource {
     @Consumes(MediaType.APPLICATION_JSON)
     @Produces(MediaType.APPLICATION_JSON)
     @Path("/available-moves")
-    public MoveResponse availableMoves(@HeaderParam("sessionId") String sessionId, @HeaderParam("userId") String userId, MakeMoveRequest request) {
+    public MoveResponse availableMoves(@HeaderParam("sessionId") String sessionId, @HeaderParam("userId") String userId, GetMovesRequest request) {
         Validation.checkForNull(request);
         var session = this.sessionService.getSessionOrThrow(UUID.fromString(sessionId));
-        var positions = session.getState().calculateAllMoves(request.pinId, request.cardId, Optional.empty(),
+        var positions = session.getState().calculateAllMoves(request.pinId, request.cardId, request.payload,
                 session.getClients().get(UUID.fromString(userId)));
         return new MoveResponse(positions);
     }

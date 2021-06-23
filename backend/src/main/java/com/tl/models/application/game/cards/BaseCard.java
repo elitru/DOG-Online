@@ -5,6 +5,7 @@ import com.fasterxml.jackson.databind.ObjectMapper;
 import com.tl.models.application.game.Game;
 import com.tl.models.application.game.GameSessionContext;
 import com.tl.models.application.game.NinePin;
+import com.tl.models.application.game.cards.payloads.JokerPayload;
 import com.tl.models.application.game.cards.payloads.StartCardPayload;
 import com.tl.models.application.user.SessionUser;
 import com.tl.models.client.responses.CardResponse;
@@ -13,6 +14,7 @@ import lombok.Data;
 import lombok.SneakyThrows;
 import lombok.ToString;
 
+import java.util.List;
 import java.util.UUID;
 
 @AllArgsConstructor
@@ -41,11 +43,19 @@ public abstract class BaseCard<T> {
         this.makeMove(currentGame, m.readValue(node, this.getType()), pinId, user);
     }
 
+    protected void makeLinearMove(GameSessionContext currentGame, UUID pinId, SessionUser user, int to) {
+        var pin = currentGame.getGame().getNinePinById(pinId);
+        int prev = pin.getCurrentLocation().getNodeId();
+        var targetField = currentGame.getGame().getFieldForFieldId(to, user);
+        pin.setCurrentLocation(targetField);
+        pin.broadcastMovement(currentGame, prev);
+    }
+
     public CardResponse toResponse() {
         return new CardResponse(this.cardId, this.stringRepresentation);
     }
 
     public abstract Class<T> getType();
 
-    public abstract boolean isMovePossible(NinePin pin, Game game, SessionUser user);
+    public abstract List<Integer> getPossibleMoves(NinePin pin, Game game, SessionUser user, JokerPayload payload);
 }

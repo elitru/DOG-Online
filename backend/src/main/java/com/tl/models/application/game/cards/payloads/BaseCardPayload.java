@@ -10,7 +10,7 @@ import lombok.ToString;
 @AllArgsConstructor
 @NoArgsConstructor
 @Data
-public class StartCardPayload extends BaseCardPayload {
+public class BaseCardPayload {
     @JsonProperty
-    public int action;
+    public int targetField;
 }

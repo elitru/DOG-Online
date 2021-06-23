@@ -1,6 +1,7 @@
 package com.tl.models.application.game.states;
 
 import com.tl.models.application.game.GameSessionContext;
+import com.tl.models.application.game.cards.payloads.JokerPayload;
 import com.tl.models.application.user.SessionUser;
 import com.tl.models.client.requests.DropCardRequest;
 import com.tl.models.client.requests.PlayCardRequest;
@@ -49,7 +50,7 @@ public abstract class GameState {
         throw new BadRequestException(BAD_STATE);
     }
 
-    public List<Integer> calculateAllMoves(UUID pinId, UUID cardId, Optional<String> jokerIdent, SessionUser player) {
+    public List<Integer> calculateAllMoves(UUID pinId, UUID cardId, JokerPayload payload, SessionUser player) {
         throw new BadRequestException(BAD_STATE);
     }
 }

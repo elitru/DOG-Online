@@ -38,10 +38,11 @@ public class SwapCardsSubState extends IngameSubState {
 
         // add card to temporary buffer
         this.swapped.put(this.context.getClients().get(toPlayer), this.context.getGame().getStack().getAllCards().get(cardId).toResponse());
-        this.counter++;
 
-        System.out.println("Added card to buffer: " + this.context.getGame().getStack().getAllCards().get(cardId).toResponse());
-        System.out.println("Sent to user: " + this.context.getClients().get(toPlayer).getUsername());
+        // remove from player
+        this.context.getGame().getCards().get(this.context.getClients().get(fromPlayer)).removeIf(c -> c.getCardId().equals(cardId));
+
+        this.counter++;
 
         if (counter == 4) {
             // notify players of the cards they received
@@ -53,7 +54,11 @@ public class SwapCardsSubState extends IngameSubState {
 
 
     private void sendBufferedCards() {
-        for(Map.Entry<SessionUser, CardResponse> entry : this.swapped.entrySet()) {
+        for (Map.Entry<SessionUser, CardResponse> entry : this.swapped.entrySet()) {
+            // add card back
+            this.context.getGame().getCards().get(this.context.getClients().get(entry.getKey().getId()))
+                    .add(this.context.getGame().getStack().getAllCards().get(entry.getValue().getCardId()));
+
             this.context.getClients().get(entry.getKey().getId()).getWebsocketSession().getAsyncRemote().sendObject(new SwapCardMessage(entry.getValue()));
         }
     }

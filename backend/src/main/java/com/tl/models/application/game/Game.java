@@ -1,8 +1,8 @@
 package com.tl.models.application.game;
 
 import com.tl.models.application.game.cards.BaseCard;
-import com.tl.models.application.game.cards.JokerCard;
-import com.tl.models.application.game.cards.StartCard;
+import com.tl.models.application.game.cards.StartCardType;
+import com.tl.models.application.game.cards.payloads.JokerPayload;
 import com.tl.models.application.game.field.BaseField;
 import com.tl.models.application.game.field.HomeField;
 import com.tl.models.application.game.field.StartField;
@@ -42,6 +42,23 @@ public class Game {
         this.teams = teams;
         ctx.setGame(this);
         this.stack = new CardStack();
+    }
+
+    public NinePin getNinePinById(UUID pinId) {
+        return this.ninepins.values().stream().flatMap(List::stream).filter(p -> p.getPinId().equals(pinId)).findFirst().get();
+    }
+
+    public BaseField getFieldForFieldId(int fieldId, SessionUser user) {
+        BaseField start;
+        if (NinePin.isOnHomeField(fieldId)) {
+            start = this.startFields.get(user).getFirstHomeField();
+        } else if (NinePin.isOnTargetField(fieldId)) {
+            start = this.startFields.get(user).getFirstTargetField();
+        } else {
+            start = this.board.getReference();
+        }
+
+        return this.board.getCircleFieldById(fieldId, start);
     }
 
     public void initField(GameSessionContext ctx) {
@@ -102,27 +119,13 @@ public class Game {
         return this.ninepins.get(player).stream().filter(p -> p.getPinId().equals(pinId)).findFirst().get();
     }
 
-    private int getRealIndex(int i) {
+    public int getRealIndex(int i) {
         return i <= GameBoard.RING_NODES ? i : i - GameBoard.RING_NODES;
     }
 
-    public List<Integer> calculateAllMoves(UUID pinId, UUID cardId, Optional<String> jokerIdent, SessionUser player) {
-        var currentField = this.getPinForPinId(player, pinId).getCurrentLocation();
+    public List<Integer> calculateAllMoves(UUID pinId, UUID cardId, JokerPayload payload, SessionUser player) {
         var card = this.stack.getAllCards().get(cardId);
-
-        switch (card.getStringRepresentation()) {
-            case "2":
-            case "3":
-            case "5":
-            case "6":
-            case "8":
-            case "9":
-            case "10":
-            case "12":
-                return this.calculateAllMovesForSimpleCard(Integer.parseInt(card.getStringRepresentation()), currentField, player);
-            default:
-                throw new BadRequestException("Encountered invalid card");
-        }
+        return card.getPossibleMoves(this.getPinForPinId(player, pinId), this, player, payload);
     }
 
     @SneakyThrows
@@ -199,28 +202,13 @@ public class Game {
     }
 
     private boolean isMovementPossible(BaseCard c, NinePin p, SessionUser user) {
-        return c.isMovePossible(p, this, user);
-    }
-
-    public long amountOfPinsAtHome(SessionUser user) {
-        return this.ninepins.get(user).stream()
-                .filter(np -> np.getCurrentLocation().getNodeId() < 0 && np.getCurrentLocation().getNodeId() >= -16)
-                .count();
+        return !c.getPossibleMoves(p, this, user, null).isEmpty();
     }
 
     public long amountOfPinsIngame(SessionUser user) {
         return this.ninepins.get(user).stream()
                 .filter(np -> np.getCurrentLocation().getNodeId() > 0)
                 .count();
-    }
-
-    private <T> boolean isTypePresent(SessionUser user, Class<T> search) {
-        for (BaseCard b : this.cards.get(user)) {
-            if (search.isInstance(b)) {
-                return true;
-            }
-        }
-        return false;
     }
 
     public List<Integer> getAllStraightWalkPositions(int amount, BaseField currentField, SessionUser currentPlayer) {
@@ -334,9 +322,5 @@ public class Game {
             }
         }
         return false;
-    }
-
-    private List<Integer> calculateAllMovesForSimpleCard(int cardValue, BaseField currentField, SessionUser player) {
-        return this.getAllStraightWalkPositions(cardValue, currentField, player);
     }
 }

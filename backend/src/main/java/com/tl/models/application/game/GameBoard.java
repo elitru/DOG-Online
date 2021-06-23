@@ -22,7 +22,7 @@ public class GameBoard {
         this.initField(ctx);
     }
 
-    private BaseField getCircleFieldById(int id, BaseField currentRef) {
+    public BaseField getCircleFieldById(int id, BaseField currentRef) {
         if (currentRef.getNodeId() == id) {
             return currentRef;
         }

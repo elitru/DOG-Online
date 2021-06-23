@@ -3,12 +3,15 @@ package com.tl.models.application.game.cards;
 import com.tl.models.application.game.Game;
 import com.tl.models.application.game.GameSessionContext;
 import com.tl.models.application.game.NinePin;
+import com.tl.models.application.game.cards.payloads.BaseCardPayload;
+import com.tl.models.application.game.cards.payloads.JokerPayload;
 import com.tl.models.application.game.field.BaseField;
 import com.tl.models.application.user.SessionUser;
 
+import java.util.List;
 import java.util.UUID;
 
-public class SimpleCard extends BaseCard<Void>{
+public class SimpleCard extends BaseCard<BaseCardPayload>{
 
     private int value;
 
@@ -18,17 +21,17 @@ public class SimpleCard extends BaseCard<Void>{
     }
 
     @Override
-    public void makeMove(GameSessionContext currentGame, Void payload, UUID pinId, SessionUser user) {
-
+    public void makeMove(GameSessionContext currentGame, BaseCardPayload payload, UUID pinId, SessionUser user) {
+        super.makeLinearMove(currentGame, pinId, user, payload.targetField);
     }
 
     @Override
-    public Class<Void> getType() {
-        return Void.class;
+    public Class<BaseCardPayload> getType() {
+        return BaseCardPayload.class;
     }
 
     @Override
-    public boolean isMovePossible(NinePin pin, Game game, SessionUser user) {
-        return game.getAllStraightWalkPositions(this.value, pin.getCurrentLocation(), user).size() > 0;
+    public List<Integer> getPossibleMoves(NinePin pin, Game game, SessionUser user, JokerPayload payload) {
+        return game.getAllStraightWalkPositions(this.value, pin.getCurrentLocation(), user);
     }
 }

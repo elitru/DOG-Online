@@ -3,6 +3,7 @@ package com.tl.models.application.game.states;
 import com.tl.models.application.game.GameBoard;
 import com.tl.models.application.game.GameSessionContext;
 import com.tl.models.application.game.NinePin;
+import com.tl.models.application.game.cards.payloads.JokerPayload;
 import com.tl.models.application.game.sub_states.DealCardsSubState;
 import com.tl.models.application.game.sub_states.PlayRoundSubState;
 import com.tl.models.application.game.sub_states.SwapCardsSubState;
@@ -52,8 +53,8 @@ public class IngameState extends GameState {
     }
 
     @Override
-    public List<Integer> calculateAllMoves(UUID pinId, UUID cardId, Optional<String> jokerIdent, SessionUser player) {
-        return this.context.getGame().calculateAllMoves(pinId, cardId, jokerIdent, player);
+    public List<Integer> calculateAllMoves(UUID pinId, UUID cardId, JokerPayload payload, SessionUser player) {
+        return this.context.getGame().calculateAllMoves(pinId, cardId, payload, player);
     }
 
     @Override

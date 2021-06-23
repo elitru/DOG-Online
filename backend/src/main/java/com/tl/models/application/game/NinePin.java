@@ -28,4 +28,20 @@ public class NinePin {
         var loc = PinDirection.fromPositions(previousLocation, this.currentLocation.getNodeId());
         GameSocketResource.makeGameBroadcast(context, new MovePinMessage(this.pinId, this.currentLocation.getNodeId(), loc));
     }
+
+    public boolean isOnHomeField() {
+        return NinePin.isOnHomeField(this.currentLocation.getNodeId());
+    }
+
+    public static boolean isOnHomeField (int location) {
+        return location < 0 && location >= -16;
+    }
+
+    public static boolean isOnTargetField (int location) {
+        return location < -16;
+    }
+
+    public boolean isOnTargetField() {
+        return NinePin.isOnTargetField(this.currentLocation.getNodeId());
+    }
 }
