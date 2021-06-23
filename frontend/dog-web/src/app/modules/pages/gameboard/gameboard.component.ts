@@ -1,6 +1,7 @@
 import { AfterViewInit, Component, ElementRef, HostListener, OnDestroy, OnInit, ViewChild } from '@angular/core';
 import { Subscription } from 'rxjs';
 import { GameState, InteractionState } from 'src/app/models/game-state';
+import { CardType } from 'src/app/models/game/card-type';
 import { GameBoardRenderer } from 'src/app/models/game/gameboard-renderer';
 import { Messages } from 'src/app/models/game/message';
 import { Pin, PinColor } from 'src/app/models/game/pin';
@@ -17,7 +18,8 @@ import { LoaderService } from 'src/app/provider/loader.service';
 })
 export class GameboardComponent implements OnInit, AfterViewInit, OnDestroy {
   public gameBoardImg = new Image();
-  public pinImg = new Image();
+
+  private isLoading: boolean = false;
   
   private stateSubscription: Subscription;
 
@@ -48,36 +50,36 @@ export class GameboardComponent implements OnInit, AfterViewInit, OnDestroy {
     this.initCanvasImages();
     this.initRenderer();
 
-    this.renderer.selectedPin$.subscribe(pin => {
-      if(!pin) return;
-
-      // make api call to get available moves
-      this.getMoves(pin);
-    });
+    setTimeout(() => this.initRenderer(), 200);
   }
 
   private async getMoves(pin: Pin): Promise<void> {
-    const fieldIds = await this.gameService.getAvailableMoves(pin.pinId, this.cardService.selectedCard, this.cardService.jokerAction);
+    if(this.isLoading) return;
+
+    this.isLoading = true;
+    const fieldIds = await this.gameService.getMoves(this.cardService.selectedCard.id, pin.pinId, this.cardService.jokerAction);
+    console.log(fieldIds);
     
     if(fieldIds.length === 0) {
       this.dialogService.show('Fehler', Messages.NO_MOVE_POSSIBLE);
       this.gameService.setInteractionState(InteractionState.SelectPin);
+      this.isLoading = false;
       return;
     }
+
+    this.renderer.possibleMoves = fieldIds;
+    this.renderer.pinForMove = pin;
     
     this.renderer.selectedPin = pin;
     this.renderer.setActionField(fieldIds);
     this.gameService.setInteractionState(InteractionState.SelectMove);
+    this.isLoading = false;
   }
 
   private initCanvasImages(): void {
     this.gameBoardImg.src = '/assets/board.svg';
     this.gameBoardImg.width = this.canvasSize;
     this.gameBoardImg.height = this.canvasSize;
-
-    this.pinImg.src = '/assets/pins/red.svg';
-    this.pinImg.width = 80;
-    this.pinImg.height = 80;
   }
 
   @HostListener('window:resize', ['$event'])
@@ -103,6 +105,13 @@ export class GameboardComponent implements OnInit, AfterViewInit, OnDestroy {
     );
 
     this.loaderService.setLoading(false);
+
+    this.renderer.selectedPin$.subscribe(pin => {
+      if(!pin) return;
+
+      // make api call to get available moves
+      this.getMoves(pin);
+    });
   }
 
   private get canvasSize(): number {

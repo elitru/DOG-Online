@@ -15,11 +15,13 @@ export class CardComponent implements OnInit {
   @Input()
   public card: Card;
 
+  private state: InteractionState;
+
   constructor(public cardService: CardService,
               public gameService: GameService) { }
 
   public ngOnInit(): void {
-    
+    this.gameService.interactionState$.subscribe(state => this.state = state);
   }
 
   public get imageUrl(): string {
@@ -31,8 +33,8 @@ export class CardComponent implements OnInit {
 
     this.cardService.select(this.card);
 
-    const currentState = this.gameService.interactionState$.getValue();
-    console.log('state -> ' + currentState);
+    const currentState = this.state;
+    console.log('state -> ' + this.state);
     console.log(this.card.type);
     
     if(currentState === InteractionState.SwapCardWithTeamMate) {
@@ -49,7 +51,6 @@ export class CardComponent implements OnInit {
           break;
 
         case CardType.Joker:
-          console.log('is joker');
           this.gameService.setInteractionState(InteractionState.SelectJokerAction);
           break;
 

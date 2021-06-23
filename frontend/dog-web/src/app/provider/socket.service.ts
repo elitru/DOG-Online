@@ -86,6 +86,7 @@ export class SocketService {
 
       case MessageTypeDTO.MovePin:
         {
+          console.log(wsData)
           const message: MovePinMessage = MovePinMessage.fromApi(wsData as MovePinMessageDTO);
           this.movePin$.next(message);
           break;

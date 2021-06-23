@@ -1,7 +1,7 @@
 <div class="card-item" 
     [ngClass]="{ 
         'selected': cardService.selectedCard && card.id === cardService.selectedCard.id && gameService.interactionState$.getValue() !== 5,
-        'selectable': cardService.isSelectable && card.isAvailable
+        'selectable': card.isAvailable
     }" 
     (click)="onSelect()">
     <img src="{{imageUrl}}"/>

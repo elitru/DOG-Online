@@ -34,7 +34,7 @@ export class CardService {
   }
 
   public get isSelectable(): boolean {
-    return this._selectable && (this.selectedCard === null || this.selectedCard === undefined);
+    return this._selectable && !this.selectedCard;
   }
 
   public select(card: Card): void {
@@ -54,10 +54,13 @@ export class CardService {
       }else if(card.type === CardType.Joker) {
         this.gameService.setInteractionState(InteractionState.SelectJokerAction);
       }else {
-        this.gameService.setInteractionState(InteractionState.SelectPlayer);
+        this.gameService.setInteractionState(InteractionState.SelectPin);
       }
     }else if(currentState === InteractionState.SelectCardForDrop) {
       this.gameService.dropCard(card);
+      this.selectedCard = null;
+      this.jokerAction = null;
+      this.cardAction = null;
     }
   }
 }

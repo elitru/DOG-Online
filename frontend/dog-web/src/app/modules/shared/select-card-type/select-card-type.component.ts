@@ -22,6 +22,12 @@ export class SelectCardTypeComponent implements OnInit {
 
   public onSelectCard(type: CardType): void {
     this.cardService.jokerAction = type;
+
+    if(type === CardType.StartEleven || type === CardType.StartThirteen) {      
+      this.gameService.setInteractionState(InteractionState.SelectCardAction);
+      return;
+    }
+
     this.gameService.setInteractionState(InteractionState.SelectPin);
   }
 }

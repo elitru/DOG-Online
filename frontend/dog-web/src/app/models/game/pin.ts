@@ -19,6 +19,7 @@ const mapColor = (color: 'green' | 'yellow' | 'blue' | 'red'): PinColor => {
 
 export class Pin {
     public image: HTMLImageElement;
+    public selectable: boolean = true;
 
     constructor(
         public readonly pinId: string,

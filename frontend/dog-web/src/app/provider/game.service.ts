@@ -23,6 +23,7 @@ import { UserTeamChangeMessage } from '../models/websockets/user-team-change-mes
 import { UserUpdateMessage } from '../models/websockets/user-update-message';
 import { ApiRoutes } from '../utils/api-routes';
 import { CardService } from './card.service';
+import { LoaderService } from './loader.service';
 import { SocketService } from './socket.service';
 
 export class Mocker {
@@ -58,12 +59,14 @@ export class GameService {
   public infoMessage$: BehaviorSubject<string> = new BehaviorSubject<string>(Messages.SELECT_CARD_FOR_SWAP);
 
   private _pins: Map<UserId, Pin[]> = new Map<UserId, Pin[]>();
+  private availableMoves: Map<string, string[]> = new Map<string, string[]>();
 
   public isOwner: boolean = false;
 
   constructor(private httpClient: HttpClient,
               private socketService: SocketService,
-              private router: Router) {
+              private router: Router,
+              private loaderService: LoaderService) {
     this.socketService.userUpdate$.subscribe(msg => this.onUserUpdate(msg));
     this.socketService.stateChange$.subscribe(msg => this.onStateChanged(msg));
     this.socketService.userTeamChange$.subscribe(msg => this.onTeamChanged(msg));
@@ -76,7 +79,7 @@ export class GameService {
 
   private onUserTurn(message: UserTurnMessage): void {
     if(!message) return;
-    console.log(message.canMakeMove);
+    this.availableMoves = message.cardMoves;
     
     if(!message.canMakeMove) {
       const cards = this._cards$.getValue().map(c => {
@@ -86,10 +89,12 @@ export class GameService {
   
       this._cards$.next(cards);
       this.setInteractionState(InteractionState.SelectCardForDrop);
+      console.log(cards);
+      
       return;
     }
 
-    const cards = this._cards$.getValue().map(c => {
+    const cards = this._cards$.getValue().map(c => {      
       if(message.cardMoves.has(c.id) || c.type === CardType.Joker) {
         c.isAvailable = true;
       }else{
@@ -98,6 +103,7 @@ export class GameService {
       return c;
     });
 
+    console.log(cards);
     this._cards$.next(cards);
     this.setInteractionState(InteractionState.SelectCardForMove);
   }
@@ -138,24 +144,53 @@ export class GameService {
 
     const nextTeam = this.getTeamById(newTeam);
     nextTeam.members.push(this._users$.getValue().find(u => u.id === userId));
-      this._teams$.next(this._teams$.getValue());
+    this._teams$.next(this._teams$.getValue());
   }
 
   private onCardsChanged(dealCardsMessage: DealCardsMessage): void {
     if(!dealCardsMessage) return;
     this._cards$.next(dealCardsMessage.cards);
+    this.resetCardsAvailable(true);
     this.setInteractionState(InteractionState.SwapCardWithTeamMate);
   }
 
 
   private onSwapCard(swapCardMessage: SwapCardMessage): void {
     if(!swapCardMessage) return;
-
+    console.log('swap -> ' + swapCardMessage.card);
+    
     const cards = this._cards$.getValue();
     cards.push(swapCardMessage.card);
     this._cards$.next(cards);
+    this.resetCardsAvailable();
 
     this.setInteractionState(InteractionState.NoTurn);
+  }
+
+  public getAvailableMovesForPin(pinId: string): number[] {
+    const result = [];
+
+    this.availableMoves.forEach((fieldIds, pin) => {
+      if(pinId === pin && fieldIds.length > 0) {
+        result.push(fieldIds);
+      }
+    });
+
+    return result;
+  }
+
+  public setSelectablePins(cardId: string): void {
+    this.pins.get(this.self.id).forEach(pin => {
+      if(!this.availableMoves.has(cardId)) return;
+
+      const pins = this.availableMoves.get(cardId);
+
+      if(pins.includes(pin.pinId)) {
+        pin.selectable = true;
+      }else{
+        pin.selectable = false;
+      }
+    });
   }
 
   public setInteractionState(next: InteractionState): void {
@@ -243,6 +278,16 @@ export class GameService {
     return this._teams$.getValue().find(t => t.members.map(u => u.id).includes(userId)) || null;
   }
 
+  public removeCardFromStack(cardId: string): void {
+    console.log('before');
+    console.log(this._cards$.getValue());
+    
+    const cards = this._cards$.getValue().filter(c => c.id !== cardId);
+    this._cards$.next(cards);
+    console.log('after');
+    console.log(this._cards$.getValue());
+  }
+
   private initializeTeams(): void {
     const users = this._users$.getValue();
     const teams: Team[] = Array.from(
@@ -266,6 +311,15 @@ export class GameService {
 
   public get canStart(): boolean {
     return this.getPinsOnHomeFields().length > 0;
+  }
+
+  private resetCardsAvailable(state: boolean = false): void {
+    console.log('reset cards');
+    const cards = this._cards$.getValue().map(card => {
+      card.isAvailable = state;
+      return card;
+    });
+    this._cards$.next(cards);
   }
 
   public async createSession(userName: string, sessionName: string, password: string | null, publicSession: boolean): Promise<SessionCreateResponse> {
@@ -321,49 +375,101 @@ export class GameService {
     }, { headers: this.headers }).toPromise();
 
     const cards = this._cards$.getValue();
-    this._cards$.next(cards.filter(c => c.id !== cardId));
+    // this._cards$.next(cards.filter(c => c.id !== cardId));
+    this.removeCardFromStack(cardId);
 
+    this.resetCardsAvailable();
     this.setInteractionState(InteractionState.NoTurn);
   }
 
-  public async getAvailableMoves(pinId: string, card: Card, action: string = ''): Promise<number[]> {
-    const request: any = {
-      pinId,
-      cardId: card.id,
-      action
+  public async makeSimpleMove(cardId: string, pinId: string, fieldId: number, jokerAction?: CardType): Promise<void> {
+    const request: PlayCardRequest<string> = {
+      cardId: cardId,
+      pinId: pinId,
+      payload: ''
     };
 
-    return this.httpClient.post<number[]>(ApiRoutes.Game.GetMoves, request,  { headers: this.headers }).toPromise();
+    if(jokerAction) {
+      request.payload = JSON.stringify({
+        cardType: jokerAction,
+        cardPayload: {
+          targetField: fieldId
+        }
+      });
+    }else{
+      request.payload = JSON.stringify({
+        targetField: fieldId
+      });
+    }
+
+    await this.playCard<string, void>(ApiRoutes.Game.MakeMove, request);
+    this.resetCardsAvailable();
   }
 
-  public async makeMove(pinId: string, { id }: Card, fieldId: number, action: string = ''): Promise<void> {
-    const request: any = {
-      pinId,
-      cardId: id,
-      action,
-      fieldId
-    };
-
-    return this.httpClient.post<void>(ApiRoutes.Game.MakeMove, request, { headers: this.headers }).toPromise();
-  }
-
-  public async startPin(cardId: string): Promise<void> {
+  public async swapPins(cardId: string, pinId: string, swapPinId: string): Promise<void> {
     const request: PlayCardRequest<string> = {
       cardId: cardId,
       pinId: this.getPinsOnHomeFields()[0].pinId,
       payload: JSON.stringify(
         {
-          action: -1
+          pinId,
+          cardPayload: ''
         }
       )
     };
 
     await this.playCard<string, void>(ApiRoutes.Game.MakeMove, request);
+    this.resetCardsAvailable();
+  }
+
+  public async startPin(card: Card): Promise<void> {
+    const request: PlayCardRequest<string> = {
+      cardId: card.id,
+      pinId: this.getPinsOnHomeFields()[0].pinId,
+      payload: JSON.stringify({
+        action: -1
+      })
+    };
+
+    if(card.type === CardType.Joker) {
+      request.payload = JSON.stringify({
+        cardPayload: JSON.stringify(
+          {
+            action: -1
+          }
+        ),
+        cardType: CardType.StartEleven
+      });
+    }
+
+    this.removeCardFromStack(card.id);
+
+    await this.playCard<string, void>(ApiRoutes.Game.MakeMove, request);
+    this.resetCardsAvailable();
   }
 
   public async dropCard(card: Card): Promise<void> {
-    
+    this.loaderService.setLoading(true);
+    await this.httpClient.post<void>(ApiRoutes.Game.DropCard, { cardId: card.id }, { headers: this.headers }).toPromise();
     this.setInteractionState(InteractionState.NoTurn);
+    this.loaderService.setLoading(false);
+    this.removeCardFromStack(card.id)
+    this.resetCardsAvailable();
+  }
+
+  public async getMoves(cardId: string, pinId: string, jokerAction?: CardType): Promise<number[]> {
+    const request: any = {
+      pinId,
+      cardId
+    };
+
+    if(jokerAction) {
+      request.payload = {
+        cardType: jokerAction
+      }
+    }
+
+    return (await this.httpClient.post<{ positions: number[] }>(ApiRoutes.Game.GetMoves, request, { headers: this.headers }).toPromise()).positions;
   }
 
   private async playCard<T, R>(route: string, request: PlayCardRequest<T>): Promise<R> {

@@ -5,6 +5,7 @@ import { GameService } from "src/app/provider/game.service";
 import { InteractionState } from "../game-state";
 import { Coordinate, FieldUtils } from "../http/fields";
 import { MovePinMessage } from "../websockets/move-pin-message";
+import { CardType } from "./card-type";
 import { Pin, PinColor } from "./pin";
 
 export class GameBoardRenderer {
@@ -18,6 +19,10 @@ export class GameBoardRenderer {
     private _selectedPin$: BehaviorSubject<Pin> = new BehaviorSubject<Pin>(null);
     public selectedPin: Pin;
     public swapPin: Pin;
+    public possibleMoves: number[] = [];
+    public pinForMove: Pin;
+
+    private isRequesting: boolean = false;
 
     constructor(
         private readonly canvasSize: number,
@@ -36,8 +41,8 @@ export class GameBoardRenderer {
         this.userPins.forEach((value) => value.forEach(p => this.pins.push(p)));
 
         this.images = [boardImage, ...this.pins.map(p => {
-            p.image.width = p.image.width * scalingRatio;
-            p.image.height = p.image.height * scalingRatio;
+            p.image.width = 80 * scalingRatio;
+            p.image.height = 80 * scalingRatio;
             return p.image;
         })];
 
@@ -62,6 +67,29 @@ export class GameBoardRenderer {
         }, 1000);
 
         this.gameService.movePins$.subscribe(message => this.onMovePin(message));
+
+        this.gameService.interactionState$.subscribe(state => {
+            if(state !== InteractionState.SelectMove && this.possibleMoves.length === 1) {
+                //this.makeMove(this.pinForMove, this.possibleMoves[0]);
+            }
+        });
+    }
+
+    private async makeMove(pin: Pin, targetField: number): Promise<void> {
+        const cardType = this.cardService.selectedCard.type === CardType.Joker ? this.cardService.jokerAction : this.cardService.selectedCard.type;
+                        
+        switch(cardType) {
+            case CardType.Two:
+            case CardType.Three:
+            case CardType.Five:
+            case CardType.Six:
+            case CardType.Eight:
+            case CardType.Nine:
+            case CardType.Ten:
+            case CardType.Twelve:
+                await this.gameService.makeSimpleMove(this.cardService.selectedCard.id, pin.pinId, targetField, this.cardService.jokerAction);
+                break;
+        }
     }
 
     private onMovePin(message: MovePinMessage): void {
@@ -69,7 +97,7 @@ export class GameBoardRenderer {
 
         const { pinId, targetFieldId, direction } = message;
         const pin = this.pins.find(p => p.pinId === pinId);
-
+        
         if(pin.fieldId < 0 && pin.fieldId >= -16) {
             console.log('1');
             this.movePinFromHomeToStart(pin);
@@ -99,32 +127,50 @@ export class GameBoardRenderer {
         this.selectedPinFields = [];
     }
 
+    private reset(): void {
+        this.selectedPinFields = [];
+        this.actionFields = new Map();
+        this.selectedPin = null;
+        this.swapPin = null;
+        this.gameService.removeCardFromStack(this.cardService.selectedCard.id);
+        this.cardService.selectedCard = null;
+        this.cardService.jokerAction = null;
+        this.pinForMove = null;
+        this.possibleMoves = [];
+        this.initializeBoard();
+    }
+
     private async onSelectField(fieldId: number) {
         const pin = this.getPinForField(fieldId);
-
+        
         const currentState = this.gameService.interactionState$.getValue();
 
-        if(currentState === InteractionState.SelectPin && pin && this.isUserPin(pin.pinId)) {
-            this._selectedPin$.next(pin);
-            return;
+        if(currentState === InteractionState.SelectMove) {
+            if(this.isRequesting) return;
+            this.isRequesting = true;
+            await this.makeMove(this.pinForMove, fieldId);
+            this.isRequesting = false;
+            this.gameService.setInteractionState(InteractionState.NoTurn);
+            this.reset();
         }
 
-        if(currentState === InteractionState.SelectTwoPinsForSwap && pin && this.isUserPin(pin.pinId)) {
-            if(!pin) {
+        if(currentState === InteractionState.SelectTwoPinsForSwap && pin) {
+            this.selectedPinFields.push(fieldId);
+            if(!this.selectedPin) {
                 this.selectedPin = pin;
+            }else{
+                this.swapPin = pin;
+                await this.gameService.swapPins(this.cardService.selectedCard.id, this.selectedPin.pinId, this.swapPin.pinId);
+                this.reset();
             }
 
-            this.swapPin = pin;
-            this.selectedPinFields.push(fieldId);
             return;
         }
 
-        if(currentState === InteractionState.SelectMove) {
-            await this.gameService.makeMove(this.selectedPin.pinId, this.cardService.selectedCard, fieldId, this.cardService.jokerAction);
-            this.cardService.selectedCard = null;
-            this.cardService.jokerAction = null;
-            this.selectedPin = null;
-            this.gameService.setInteractionState(InteractionState.NoTurn);
+        if(currentState === InteractionState.SelectPin && pin && this.isUserPin(pin.pinId) && !this.selectedPin) {
+            this.selectedPin = pin;
+            this._selectedPin$.next(pin);
+            return;
         }
     }
 
@@ -364,11 +410,16 @@ export class GameBoardRenderer {
 
     private renderPins(): void {
         this.pins.forEach(pin => {
+            if(!pin.selectable) {
+                this.ctx.globalAlpha = .5;
+            }
+
             this.drawNinePin(pin.image, pin.coordinates.x, pin.coordinates.y);
+            this.ctx.globalAlpha = 1;
         })
     }
 
-    private drawNinePin(image: HTMLImageElement, x: number, y: number): void {
+    private drawNinePin(image: HTMLImageElement, x: number, y: number): void {        
         this.ctx.drawImage(image, x, y, image.width, image.width);
     }
 
