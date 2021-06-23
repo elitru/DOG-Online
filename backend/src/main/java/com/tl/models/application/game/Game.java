@@ -6,7 +6,9 @@ import com.tl.models.application.game.cards.StartCard;
 import com.tl.models.application.game.field.BaseField;
 import com.tl.models.application.game.field.HomeField;
 import com.tl.models.application.game.field.StartField;
+import com.tl.models.application.game.sub_states.DealCardsSubState;
 import com.tl.models.application.game.sub_states.IngameSubState;
+import com.tl.models.application.game.sub_states.SwapCardsSubState;
 import com.tl.models.application.user.SessionUser;
 import com.tl.models.client.requests.PlayCardRequest;
 import lombok.*;
@@ -132,7 +134,19 @@ public class Game {
         this.cards.get(user).removeIf(c -> c.getCardId().equals(card.getCardId()));
         // announce next player
         var p = this.getNextUser(user);
-        this.getState().announcePlayerIsToPlay(p);
+        
+        if (!this.getState().registerCardPlayed()) {
+            // there are still cards to be played --> just announce the next player
+            this.getState().announcePlayerIsToPlay(p);
+        } else {
+            // no cards left --> switch to new state (deal the cards again)
+            this.setState(new DealCardsSubState(
+                    context,
+                    this.getState().getAmountOfCardsPerRound() == 1 ? 6 : this.getState().getAmountOfCardsPerRound() - 1)
+            );
+            // then --> swap cards
+            this.setState(new SwapCardsSubState(context, p));
+        }
     }
 
     private SessionUser getNextUser(SessionUser s) {

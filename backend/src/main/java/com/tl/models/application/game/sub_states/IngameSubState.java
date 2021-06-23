@@ -27,4 +27,12 @@ public abstract class IngameSubState {
         throw new BadRequestException(BAD_STATE);
     }
 
+    public boolean registerCardPlayed() {
+        throw new BadRequestException(BAD_STATE);
+    }
+
+    public int getAmountOfCardsPerRound() {
+        return 0;
+    }
+
 }

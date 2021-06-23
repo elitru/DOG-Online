@@ -8,6 +8,7 @@ public class PlayRoundSubState extends IngameSubState {
 
     private int amountCards;
     private SessionUser startedRound;
+    private int amountPlayed = 0;
 
     /**
      * One round --> until no player has any cards left
@@ -26,11 +27,25 @@ public class PlayRoundSubState extends IngameSubState {
     }
 
     @Override
+    /**
+     * Return value determines whether a new player should be announced!
+     */
+    public boolean registerCardPlayed() {
+        this.amountPlayed++;
+        if (this.amountPlayed == this.amountCards * 4) {
+            // every player has played their amount of cards --> go to new state
+            return true;
+        }
+        return false;
+    }
+
+    @Override
     public void announcePlayerIsToPlay(SessionUser user) {
-        System.out.printf("User %s is now to play!\n", user.getUsername());
         this.context.getClients().get(user.getId()).getWebsocketSession().getAsyncRemote().sendObject(new AskToPlayCardMessage(context.getGame().getCardMovesForUser(user)));
     }
 
-
-
+    @Override
+    public int getAmountOfCardsPerRound() {
+        return this.amountCards;
+    }
 }
