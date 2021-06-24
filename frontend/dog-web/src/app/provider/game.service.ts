@@ -89,7 +89,6 @@ export class GameService {
   
       this._cards$.next(cards);
       this.setInteractionState(InteractionState.SelectCardForDrop);
-      console.log(cards);
       
       return;
     }
@@ -103,7 +102,6 @@ export class GameService {
       return c;
     });
 
-    console.log(cards);
     this._cards$.next(cards);
     this.setInteractionState(InteractionState.SelectCardForMove);
   }
@@ -157,7 +155,6 @@ export class GameService {
 
   private onSwapCard(swapCardMessage: SwapCardMessage): void {
     if(!swapCardMessage) return;
-    console.log('swap -> ' + swapCardMessage.card);
     
     const cards = this._cards$.getValue();
     cards.push(swapCardMessage.card);
@@ -278,14 +275,9 @@ export class GameService {
     return this._teams$.getValue().find(t => t.members.map(u => u.id).includes(userId)) || null;
   }
 
-  public removeCardFromStack(cardId: string): void {
-    console.log('before');
-    console.log(this._cards$.getValue());
-    
+  public removeCardFromStack(cardId: string): void {    
     const cards = this._cards$.getValue().filter(c => c.id !== cardId);
     this._cards$.next(cards);
-    console.log('after');
-    console.log(this._cards$.getValue());
   }
 
   private initializeTeams(): void {
@@ -314,7 +306,6 @@ export class GameService {
   }
 
   private resetCardsAvailable(state: boolean = false): void {
-    console.log('reset cards');
     const cards = this._cards$.getValue().map(card => {
       card.isAvailable = state;
       return card;
@@ -370,13 +361,11 @@ export class GameService {
   }
 
   public async swapCard(cardId: string, toPlayer: string): Promise<void> {
+    this.removeCardFromStack(cardId);
+    
     await this.httpClient.post(ApiRoutes.Game.SwapCard, {
       cardId, toPlayer
     }, { headers: this.headers }).toPromise();
-
-    const cards = this._cards$.getValue();
-    // this._cards$.next(cards.filter(c => c.id !== cardId));
-    this.removeCardFromStack(cardId);
 
     this.resetCardsAvailable();
     this.setInteractionState(InteractionState.NoTurn);
@@ -392,9 +381,11 @@ export class GameService {
     if(jokerAction) {
       request.payload = JSON.stringify({
         cardType: jokerAction,
-        cardPayload: {
-          targetField: fieldId
-        }
+        cardPayload: JSON.stringify(
+          {
+            targetField: fieldId
+          }
+        )
       });
     }else{
       request.payload = JSON.stringify({
