@@ -54,26 +54,34 @@ export class GameboardComponent implements OnInit, AfterViewInit, OnDestroy {
   }
 
   private async getMoves(pin: Pin): Promise<void> {
-    if(this.isLoading) return;
-
-    this.isLoading = true;
-    const fieldIds = await this.gameService.getMoves(this.cardService.selectedCard.id, pin.pinId, this.cardService.jokerAction);
-    console.log(fieldIds);
+    console.log('hrer - >' + this.cardService.selectedCard + ' | ' + this.isLoading);
     
-    if(fieldIds.length === 0) {
-      this.dialogService.show('Fehler', Messages.NO_MOVE_POSSIBLE);
-      this.gameService.setInteractionState(InteractionState.SelectPin);
+    if(this.isLoading || !this.cardService.selectedCard) return;
+
+    try {
+      this.isLoading = true;
+      const fieldIds = await this.gameService.getMoves(this.cardService.selectedCard.id, pin.pinId, this.cardService.jokerAction);
+      console.log(fieldIds);
+      
+      if(fieldIds.length === 0) {
+        this.dialogService.show('Fehler', Messages.NO_MOVE_POSSIBLE);
+        this.gameService.setInteractionState(InteractionState.SelectPin);
+        this.isLoading = false;
+        return;
+      }
+
+      this.renderer.possibleMoves = fieldIds;
+      this.renderer.pinForMove = pin;
+      
+      this.renderer.selectedPin = pin;
+      this.renderer.setActionField(fieldIds);
+      this.gameService.setInteractionState(InteractionState.SelectMove);
       this.isLoading = false;
-      return;
+    }catch(e) {
+      console.log('error >');
+      console.log(e);
+      this.isLoading = false;
     }
-
-    this.renderer.possibleMoves = fieldIds;
-    this.renderer.pinForMove = pin;
-    
-    this.renderer.selectedPin = pin;
-    this.renderer.setActionField(fieldIds);
-    this.gameService.setInteractionState(InteractionState.SelectMove);
-    this.isLoading = false;
   }
 
   private initCanvasImages(): void {
@@ -90,19 +98,23 @@ export class GameboardComponent implements OnInit, AfterViewInit, OnDestroy {
   }
 
   private initRenderer(): void {
-    this.renderer = new GameBoardRenderer(
-      // canvas size
-      this.canvasSize,
-      // html canvas element
-      this.boardRef.nativeElement,
-      // game board image element
-      this.gameBoardImg,
-      // test pin
-      this.gameService.pins,
-      FieldUtils.getScaledFields(this.canvasSize),
-      this.gameService,
-      this.cardService
-    );
+    if(!this.renderer) {
+      this.renderer = new GameBoardRenderer(
+        // canvas size
+        this.canvasSize,
+        // html canvas element
+        this.boardRef.nativeElement,
+        // game board image element
+        this.gameBoardImg,
+        // test pin
+        this.gameService.pins,
+        FieldUtils.getScaledFields(this.canvasSize),
+        this.gameService,
+        this.cardService
+      );
+    }else{
+      this.renderer.resizeRenderer(this.canvasSize);
+    }
 
     this.loaderService.setLoading(false);
 

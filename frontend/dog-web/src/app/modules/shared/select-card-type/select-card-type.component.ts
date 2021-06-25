@@ -26,6 +26,9 @@ export class SelectCardTypeComponent implements OnInit {
     if(type === CardType.StartEleven || type === CardType.StartThirteen) {      
       this.gameService.setInteractionState(InteractionState.SelectCardAction);
       return;
+    }else if(type === CardType.Swap) {
+      this.gameService.setInteractionState(InteractionState.SelectTwoPinsForSwap);
+      return;
     }
 
     this.gameService.setInteractionState(InteractionState.SelectPin);

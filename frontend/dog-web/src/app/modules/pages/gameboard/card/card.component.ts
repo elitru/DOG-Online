@@ -54,6 +54,10 @@ export class CardComponent implements OnInit {
           this.gameService.setInteractionState(InteractionState.SelectJokerAction);
           break;
 
+        case CardType.Swap:
+          this.gameService.setInteractionState(InteractionState.SelectTwoPinsForSwap);
+          break;
+
         default:
           this.gameService.setInteractionState(InteractionState.SelectPin);
           break;

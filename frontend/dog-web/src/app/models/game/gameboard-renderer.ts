@@ -9,7 +9,7 @@ import { CardType } from "./card-type";
 import { Pin, PinColor } from "./pin";
 
 export class GameBoardRenderer {
-    private static eventSet: boolean = false;
+    private static eventSet: (event: MouseEvent) => void | null = null;
 
     private ctx: CanvasRenderingContext2D;
     private images: HTMLImageElement[] = [];
@@ -27,20 +27,18 @@ export class GameBoardRenderer {
     private isRequesting: boolean = false;
 
     constructor(
-        private readonly canvasSize: number,
+        private canvasSize: number,
         private canvas: HTMLCanvasElement,
-        private readonly boardImage: HTMLImageElement,
+        private boardImage: HTMLImageElement,
         private userPins: Map<string, Pin[]>,
-        private readonly fields: Map<number, Coordinate>,
+        private fields: Map<number, Coordinate>,
         private gameService: GameService,
         private cardService: CardService
-    ) {         
+    ) {
         this.ctx = canvas.getContext('2d');
         
-        if(!GameBoardRenderer.eventSet) {
-            this.canvas.addEventListener('click', this.onClickCanvas.bind(this));
-            GameBoardRenderer.eventSet = true;
-        }
+        this.canvas.addEventListener('click', this.onClickCanvas.bind(this));
+        GameBoardRenderer.eventSet = this.onClickCanvas.bind(this);
 
         const scalingRatio = FieldUtils.getScalingRatio(canvasSize);
         
@@ -59,7 +57,6 @@ export class GameBoardRenderer {
 
         this._clickedFields$.subscribe(fieldId => {
             if(!fieldId) return;
-            console.log('click 2');
             this.onSelectField(fieldId);
         });
 
@@ -81,10 +78,32 @@ export class GameBoardRenderer {
         });
     }
 
-    private async makeMove(pin: Pin, targetField: number): Promise<void> {
-        if(!pin) return;
-        console.log('this is pin -> ' + JSON.stringify(pin));
+    public resizeRenderer(canvasSize: number): void {
+        this.canvasSize = canvasSize;
+        const scalingRatio = FieldUtils.getScalingRatio(this.canvasSize);
         
+        this.userPins.forEach((value) => value.forEach(p => this.pins.push(p)));
+
+        this.images = [this.boardImage, ...this.pins.map(p => {
+            p.image.width = 80 * scalingRatio;
+            p.image.height = 80 * scalingRatio;
+            return p.image;
+        })];
+
+        this.pins.forEach(p => p.coordinates = this.fields.get(p.fieldId));
+
+        this.setCanvasDimensions();
+        this.waitForAllImagesToBeLoadedAndInitialize();
+
+        this.actionFields = new Map();
+        this.initFields();
+    }
+
+    private async makeMove(pin: Pin, targetField: number): Promise<void> {
+        console.log('this is pin -> ' + JSON.stringify(pin));
+        if(!pin) return;
+        
+        this.actions = [];
         const cardType = this.cardService.selectedCard.type === CardType.Joker ? this.cardService.jokerAction : this.cardService.selectedCard.type;
                         
         switch(cardType) {
@@ -140,7 +159,6 @@ export class GameBoardRenderer {
 
     private reset(): void {
         this.selectedPinFields = [];
-        this.actionFields = new Map();
         this.selectedPin = null;
         this.swapPin = null;
         this.gameService.removeCardFromStack(this.cardService.selectedCard.id);
@@ -158,9 +176,18 @@ export class GameBoardRenderer {
         console.log('curr field -> ' + fieldId);
         console.log('selected pin -> ' + pin);
         console.log(currentState);
+        console.log('selected -> ' + this.selectedPin);
 
         if(currentState === InteractionState.SelectMove) {
+            console.log('here0');
+            console.log(this.actions);
+            console.log(fieldId);
+            
+            if(!this.actions.includes(fieldId)) return;
+            console.log('here1');
             if(this.isRequesting) return;
+            console.log('here2');
+            console.log('pin for move -> ' + this.pinForMove);
             this.isRequesting = true;
             await this.makeMove(this.pinForMove, fieldId);
             this.isRequesting = false;
@@ -175,7 +202,7 @@ export class GameBoardRenderer {
                 this.selectedPin = pin;
             }else{
                 this.swapPin = pin;
-                await this.gameService.swapPins(this.cardService.selectedCard.id, this.selectedPin.pinId, this.swapPin.pinId);
+                await this.gameService.swapPins(this.cardService.selectedCard, this.selectedPin.pinId, this.swapPin.pinId);
                 this.reset();
             }
 
@@ -184,6 +211,7 @@ export class GameBoardRenderer {
 
         if(currentState === InteractionState.SelectPin && pin && this.isUserPin(pin.pinId) && !this.selectedPin) {
             this.selectedPin = pin;
+            console.log('fired...');
             this._selectedPin$.next(pin);
             return;
         }
@@ -442,8 +470,6 @@ export class GameBoardRenderer {
     }
 
     public setActionField(fieldIds: number | number[]): void {
-        this.actions = [];
-
         if(typeof(fieldIds) === 'number') {
             this.renderActionsOnField(fieldIds);
             return;
@@ -498,28 +524,23 @@ export class GameBoardRenderer {
         };
     }
 
-    private onClickCanvas(event: MouseEvent): void {
+    private onClickCanvas(event: MouseEvent): void {        
         const clickCoordinates = this.getClickCoordinates(event.clientX, event.clientY);
         const fieldId = this.getFieldForClick(clickCoordinates);
+        
         if(!fieldId) return;
 
-        if(this.actions.includes(fieldId)) {
-            // clear actions
-            this.actions = [];
-        }
-
-        this.initializeBoard();
-        console.log('click 1');
-        
+        this.initializeBoard();        
         this._clickedFields$.next(fieldId);
     }
 
     private getFieldForClick({ x, y }: Coordinate): number | null {
         let result: number = -1;
         
+        
         this.actionFields.forEach((fieldCoords, fieldId) => {
             const actionFieldRadius = FieldUtils.getActionRadius(fieldId, this.canvasSize);
-
+            
             if(
                 // check x coords
                 x >= (fieldCoords.x - actionFieldRadius) && x <= (fieldCoords.x + actionFieldRadius)

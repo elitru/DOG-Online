@@ -149,6 +149,9 @@ export class GameService {
     if(!dealCardsMessage) return;
     this._cards$.next(dealCardsMessage.cards);
     this.resetCardsAvailable(true);
+
+    setTimeout(() => this.resetCardsAvailable(true), 100);
+
     this.setInteractionState(InteractionState.SwapCardWithTeamMate);
   }
 
@@ -397,17 +400,29 @@ export class GameService {
     this.resetCardsAvailable();
   }
 
-  public async swapPins(cardId: string, pinId: string, swapPinId: string): Promise<void> {
+  public async swapPins(card: Card, pinId: string, swapPinId: string): Promise<void> {
     const request: PlayCardRequest<string> = {
-      cardId: cardId,
-      pinId: this.getPinsOnHomeFields()[0].pinId,
-      payload: JSON.stringify(
-        {
-          pinId,
-          cardPayload: ''
-        }
-      )
+      cardId: card.id,
+      pinId: pinId,
+      payload: ''
     };
+
+    if(card.type === CardType.Joker) {
+      request.payload = JSON.stringify(
+        {
+          cardType: CardType.Swap,
+          cardPayload: JSON.stringify({
+            otherPin: swapPinId
+          })
+        }
+      );
+    }else{
+      request.payload = JSON.stringify(
+        {
+          otherPin: swapPinId
+        }
+      );
+    }
 
     await this.playCard<string, void>(ApiRoutes.Game.MakeMove, request);
     this.resetCardsAvailable();
