@@ -35,7 +35,6 @@ public class GameResource {
     public void swapCards(@HeaderParam("sessionId") String sessionId, @HeaderParam("userId") String userId, SwapCardRequest request) {
         Validation.checkForNull(request);
         var session = this.sessionService.getSessionOrThrow(UUID.fromString(sessionId));
-        System.out.println(session.getGame().getState().getClass());
         session.getGame().getState().swapCard(UUID.fromString(userId), request.toPlayer, request.cardId);
     }
 

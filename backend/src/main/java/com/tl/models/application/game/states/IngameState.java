@@ -38,7 +38,7 @@ public class IngameState extends GameState {
     private SessionUser getRandomPlayer() {
         int index = new Random().nextInt(4);
         var player = this.context.getGame().getUserForIndex(index);
-        System.out.println("Selected player " + player.getUsername() + " to start the round.");
+        System.out.println("Selected player " + player.getUsername() + " to start the game.");
         return player;
     }
 

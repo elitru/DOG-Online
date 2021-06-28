@@ -14,7 +14,5 @@ import java.util.UUID;
 @Data
 public class SwapCardPayload {
     @JsonProperty
-    public UUID firstPin;
-    @JsonProperty
-    public UUID secondPin;
+    public UUID otherPin;
 }

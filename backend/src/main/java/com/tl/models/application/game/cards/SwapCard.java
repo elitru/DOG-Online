@@ -20,8 +20,8 @@ public class SwapCard extends BaseCard<SwapCardPayload>{
 
     @Override
     public int makeMove(GameSessionContext currentGame, SwapCardPayload payload, UUID pinId, SessionUser user) {
-        var fromPin = currentGame.getGame().getNinePinById(payload.firstPin);
-        var toPin = currentGame.getGame().getNinePinById(payload.secondPin);
+        var fromPin = currentGame.getGame().getNinePinById(pinId);
+        var toPin = currentGame.getGame().getNinePinById(payload.otherPin);
 
         var fromLocation = fromPin.getCurrentLocation();
         var fromLocationId = fromLocation.getNodeId();
@@ -44,7 +44,7 @@ public class SwapCard extends BaseCard<SwapCardPayload>{
 
     @Override
     public List<Integer> getPossibleMoves(NinePin pin, Game game, SessionUser user, JokerPayload payload) {
-        if (game.amountOfPinsIngame(user) > 1) {
+        if (game.amountOfPinsIngame() > 1) {
             return new ArrayList<>(Arrays.asList(-40000));
         } else {
             return new ArrayList<>();

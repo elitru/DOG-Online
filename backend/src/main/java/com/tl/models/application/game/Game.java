@@ -141,7 +141,11 @@ public class Game {
             var removedUser = this.getUserForPin(p);
             var previousLocation = p.getCurrentLocation().getNodeId();
 
-            p.setCurrentLocation(this.getNextFreeHomeFieldForUser(removedUser));
+            var loc = this.getNextFreeHomeFieldForUser(removedUser);
+            p.setCurrentLocation(loc);
+
+            System.out.printf("[REMOVE] Sending player %s from %d to %d", removedUser.getUsername(), previousLocation, loc.getNodeId());
+
             p.broadcastMovement(context, previousLocation);
         });
 
@@ -246,6 +250,13 @@ public class Game {
                 .count();
     }
 
+    public long amountOfPinsIngame() {
+        return this.ninepins.values().stream()
+                .flatMap(List::stream)
+                .filter(np -> np.getCurrentLocation().getNodeId() > 0)
+                .count();
+    }
+
     public List<Integer> getAllStraightWalkPositions(int amount, BaseField currentField, SessionUser currentPlayer) {
 
         // make sure we're not on a home field
@@ -294,7 +305,7 @@ public class Game {
 
             // start field is not occupied by pin of the same color --> add the end field
             if (!this.isStartFieldOccupiedByPlayerOfSameColor(field)) {
-                all.add(currentField.getNodeId() + amount);
+                all.add(this.getRealIndex(currentField.getNodeId() + amount));
             }
 
             // now: check if the player would be able to move his pin towards the goal
@@ -326,7 +337,7 @@ public class Game {
                 // check if not occupied
                 if (free) {
                     // not occupied --> add target field as well
-                    all.add(field.getFirstTargetField().getNodeId() - remainingFields);
+                    all.add(this.getRealIndex(field.getFirstTargetField().getNodeId() - remainingFields));
                 }
             }
             return all;
