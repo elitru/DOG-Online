@@ -132,9 +132,9 @@ public class Game {
     public void playCard(GameSessionContext context, PlayCardRequest request, SessionUser user) {
         var card = this.stack.getAllCards().get(request.getCardId());
         System.out.println("now playing card " + card.getStringRepresentation() + " with payload " + request.getPayload());
-        card.makeMove(context, request.getPayload(), request.getPinId(), user);
+        var movedTo = card.makeMove(context, request.getPayload(), request.getPinId(), user);
         // check to see if there is _another_ pin with the same location
-        var maybeThrow = this.getPinForLocation(0, request.getPinId());
+        var maybeThrow = this.getPinForLocation(movedTo, request.getPinId());
 
         maybeThrow.ifPresent(p -> {
             // send message that this pin needs to be removed
@@ -144,7 +144,7 @@ public class Game {
             var loc = this.getNextFreeHomeFieldForUser(removedUser);
             p.setCurrentLocation(loc);
 
-            System.out.printf("[REMOVE] Sending player %s from %d to %d", removedUser.getUsername(), previousLocation, loc.getNodeId());
+            System.out.printf("[REMOVE] Sending player %s from %d to %d\n", removedUser.getUsername(), previousLocation, loc.getNodeId());
 
             p.broadcastMovement(context, previousLocation);
         });
@@ -296,8 +296,12 @@ public class Game {
             path.add(index);
         }
 
+        System.out.println("Walking on path: " + Arrays.toString(path.toArray()));
+
         // first, check if we're traversing a start field
         var start = path.stream().filter(integer -> Arrays.stream(GameBoard.START_FIELDS).anyMatch(integer::equals)).findFirst();
+
+        System.out.println("Found start field? " + start.isPresent());
 
         return start.map(fieldId -> {
             List<Integer> all = new ArrayList<>();

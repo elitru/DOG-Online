@@ -76,6 +76,8 @@ public class GameSocketResource {
     }
 
     public static void makeGameBroadcast(GameSessionContext context, Message message) {
+        System.out.println("Sending message: " + message
+        );
         context.getClients()
                 .values()
                 .stream()

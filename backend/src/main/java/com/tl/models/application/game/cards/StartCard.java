@@ -21,14 +21,11 @@ public class StartCard extends BaseCard<StartCardPayload> {
 
     @Override
     public int makeMove(GameSessionContext currentGame, StartCardPayload payload, UUID pinId, SessionUser user) {
-        switch (payload.action) {
-            case -1:
-                return this.handleStart(currentGame, pinId, user);
-            case 11:
-            case 13:
-                return super.makeLinearMove(currentGame, pinId, user, payload.targetField);
-            default:
-                throw new BadRequestException("Received invalid amount for start card");
+        // user wants to move pin to board
+        if (payload.moveToBoard) {
+            return this.handleStart(currentGame, pinId, user);
+        } else {
+            return super.makeLinearMove(currentGame, pinId, user, payload.targetField);
         }
     }
 

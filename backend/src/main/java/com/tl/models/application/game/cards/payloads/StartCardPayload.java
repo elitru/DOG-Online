@@ -12,5 +12,5 @@ import lombok.ToString;
 @Data
 public class StartCardPayload extends BaseCardPayload {
     @JsonProperty
-    public int action;
+    public boolean moveToBoard;
 }

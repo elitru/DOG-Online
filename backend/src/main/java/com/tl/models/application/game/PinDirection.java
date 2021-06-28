@@ -31,12 +31,14 @@ public enum PinDirection {
         }
 
         // here, newPosition < oldPosition
-        if ((Math.abs(newPosition) - Math.abs(oldPosition)) > 0) {
-            System.out.println("here3");
+        int delta = Math.abs(newPosition) - Math.abs(oldPosition);
+        if (delta > 0) {
             // moving forward
             return PinDirection.Forward;
         } else {
-            System.out.println("here4");
+            if (delta < -4 ) {
+                return PinDirection.Forward;
+            }
             return PinDirection.Backward;
         }
 

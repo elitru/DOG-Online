@@ -8,6 +8,7 @@ import com.tl.models.client.requests.SwapCardRequest;
 import com.tl.models.client.responses.MoveResponse;
 import com.tl.services.SessionService;
 import com.tl.validation.Validation;
+import org.glassfish.json.JsonUtil;
 
 import javax.inject.Inject;
 import javax.ws.rs.*;
@@ -55,6 +56,7 @@ public class GameResource {
     @Produces(MediaType.APPLICATION_JSON)
     @Path("/play-card")
     public void playCard(@HeaderParam("sessionId") String sessionId, @HeaderParam("userId") String userId, PlayCardRequest request) {
+        System.out.println("Got play-card request: " + request);
         var session = this.sessionService.getSessionOrThrow(UUID.fromString(sessionId));
         session.getState().playCard(request, session.getClients().get(UUID.fromString(userId)));
     }

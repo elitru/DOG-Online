@@ -9,9 +9,11 @@ public class CardStack {
 
     public static final int MAX_BUFFER_CAP = 20;
 
-    private static int[] normalCards = {2, 3, 5, 6, 8, 9, 10, 12};
+    //private static int[] normalCards = {2, 3, 5, 6, 8, 9, 10, 12};
+    private static int[] normalCards = {10, 3, 10, 6, 8, 9, 10, 12};
 
     HashMap<UUID, BaseCard> allCards = new HashMap<>();
+
 
     private Queue<BaseCard> cardStack = new ArrayDeque<>();
     private List<BaseCard> shuffleBuffer = new ArrayList<>();

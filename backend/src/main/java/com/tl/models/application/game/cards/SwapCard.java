@@ -44,10 +44,11 @@ public class SwapCard extends BaseCard<SwapCardPayload>{
 
     @Override
     public List<Integer> getPossibleMoves(NinePin pin, Game game, SessionUser user, JokerPayload payload) {
-        if (game.amountOfPinsIngame() > 1) {
-            return new ArrayList<>(Arrays.asList(-40000));
-        } else {
-            return new ArrayList<>();
-        }
+//        if (game.amountOfPinsIngame() > 1) {
+//            return new ArrayList<>(Arrays.asList(-40000));
+//        } else {
+//            return new ArrayList<>();
+//        }
+        return new ArrayList<>();
     }
 }

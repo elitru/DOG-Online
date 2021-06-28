@@ -57,7 +57,7 @@ public class TeamAssignmentState extends GameState {
         }
         var currentTeam = context.getGame().getTeamForUser(user).orElseThrow(BadRequestException::new);
         var targetTeam = Optional.ofNullable(context.getGame().getTeams().get(target)).orElseThrow(BadRequestException::new);
-        if (targetTeam.isFull()) {
+        if (targetTeam.getTeamId() != 0 && targetTeam.isFull()) {
             throw new BadRequestException();
         }
         currentTeam.removeUserFromTeam(user);
