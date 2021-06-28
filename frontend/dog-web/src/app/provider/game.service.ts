@@ -9,6 +9,7 @@ import { GameBoardRenderer } from '../models/game/gameboard-renderer';
 import { Messages } from '../models/game/message';
 import { Pin, PinColor } from '../models/game/pin';
 import { PinDTO } from '../models/http/dto/pin.dto';
+import { Game } from '../models/http/game';
 import { PlayCardRequest, SessionCreateRequest, SessionJoinRequest, TeamJoinRequest } from '../models/http/requests';
 import { SessionCreateResponse } from '../models/http/responses';
 import { Team } from '../models/http/team';
@@ -21,8 +22,10 @@ import { StateChangedMessage } from '../models/websockets/state-changed-message'
 import { SwapCardMessage } from '../models/websockets/swap-card-message';
 import { UserTeamChangeMessage } from '../models/websockets/user-team-change-message';
 import { UserUpdateMessage } from '../models/websockets/user-update-message';
+import { WinMessage } from '../models/websockets/win-message';
 import { ApiRoutes } from '../utils/api-routes';
 import { CardService } from './card.service';
+import { DialogService } from './dialog.service';
 import { LoaderService } from './loader.service';
 import { SocketService } from './socket.service';
 
@@ -66,6 +69,7 @@ export class GameService {
   constructor(private httpClient: HttpClient,
               private socketService: SocketService,
               private router: Router,
+              private dialogService: DialogService,
               private loaderService: LoaderService) {
     this.socketService.userUpdate$.subscribe(msg => this.onUserUpdate(msg));
     this.socketService.stateChange$.subscribe(msg => this.onStateChanged(msg));
@@ -73,36 +77,60 @@ export class GameService {
     this.socketService.dealCards$.subscribe(msg => this.onCardsChanged(msg));
     this.socketService.swapCards$.subscribe(msg => this.onSwapCard(msg));
     this.socketService.userTurn$.subscribe(msg => this.onUserTurn(msg));
+    this.socketService.win$.subscribe(msg => this.onWin(msg));
 
     //this._pins.set('1', [new Pin('2', PinColor.RED, 3)])
   }
 
+  private onWin(message: WinMessage): void {
+    if(!message) return;
+
+    const team = this.getTeamById(message.winnerTeamId);
+
+    this.setInteractionState(InteractionState.NoTurn);
+    this._gameState$.next(GameState.Ended);
+
+    this.router.navigateByUrl('/');
+    this.dialogService.show('Spielende', `Das Team bestehend aus den Spielern ${team.members[0].username} und ${team.members[1].username} hat gewonnen!`);
+  }
+
   private onUserTurn(message: UserTurnMessage): void {
     if(!message) return;
-    this.availableMoves = message.cardMoves;
     
-    if(!message.canMakeMove) {
-      const cards = this._cards$.getValue().map(c => {
-        c.isAvailable = true;
+    setTimeout(() => {
+      console.log('your turn');
+    
+      this.availableMoves = message.cardMoves;
+      
+      if(!message.canMakeMove) {
+        const cards = this._cards$.getValue().map(c => {
+          c.isAvailable = true;
+          return c;
+        });
+    
+        this._cards$.next(cards);
+        this.setInteractionState(InteractionState.SelectCardForDrop);
+        return;
+      }
+
+      console.log(message.cardMoves);
+
+      const cards = this._cards$.getValue().map(c => {      
+        console.log('Check -> ' + c.id + ' - ' + message.cardMoves.has(c.id));      
+        if((message.cardMoves.has(c.id) && message.cardMoves.get(c.id).length > 0) || c.type === CardType.Joker) {
+          c.isAvailable = true;
+        }else{
+          c.isAvailable = false;
+        }
         return c;
       });
-  
+
+      console.log('cards loaded');
+      console.log(cards);
+
       this._cards$.next(cards);
-      this.setInteractionState(InteractionState.SelectCardForDrop);
-      return;
-    }
-
-    const cards = this._cards$.getValue().map(c => {      
-      if(message.cardMoves.has(c.id) || c.type === CardType.Joker) {
-        c.isAvailable = true;
-      }else{
-        c.isAvailable = false;
-      }
-      return c;
-    });
-
-    this._cards$.next(cards);
-    this.setInteractionState(InteractionState.SelectCardForMove);
+      this.setInteractionState(InteractionState.SelectCardForMove);
+    }, 200);
   }
 
   private onUserUpdate(userUpdateMessage: UserUpdateMessage): void {
@@ -146,12 +174,17 @@ export class GameService {
 
   private onCardsChanged(dealCardsMessage: DealCardsMessage): void {
     if(!dealCardsMessage) return;
+
     this._cards$.next(dealCardsMessage.cards);
     this.resetCardsAvailable(true);
-
-    setTimeout(() => this.resetCardsAvailable(true), 100);
-
     this.setInteractionState(InteractionState.SwapCardWithTeamMate);
+
+    setTimeout(() => {
+      this.resetCardsAvailable(true);
+      this.setInteractionState(InteractionState.SwapCardWithTeamMate);
+      console.log(dealCardsMessage.cards);
+      console.log('done');
+    }, 100);
   }
 
 
@@ -190,6 +223,21 @@ export class GameService {
         pin.selectable = false;
       }
     });
+  }
+
+  public get userColorCode(): string {
+    if(this._gameState$.getValue() !== GameState.Ingame) {
+      return '#fff';
+    }
+
+    const color = this.pins.get(this.self.id)[0].color;
+
+    switch(color) {
+      case PinColor.RED:      return '#A10B07';
+      case PinColor.BLUE:     return '#005695';
+      case PinColor.GREEN:    return '#279500';
+      case PinColor.YELLOW:   return '#F2C94C';
+    }
   }
 
   public setInteractionState(next: InteractionState): void {
@@ -492,5 +540,11 @@ export class GameService {
 
   private async playCard<T, R>(route: string, request: PlayCardRequest<T>): Promise<R> {
     return this.httpClient.post<R>(route, request, { headers: this.headers }).toPromise();
+  }
+
+  public async getGameList(): Promise<Game[]> {
+    const games = await this.httpClient.get<Game[]>(ApiRoutes.Session.GameList).toPromise();
+    console.log(games);
+    return games;
   }
 }

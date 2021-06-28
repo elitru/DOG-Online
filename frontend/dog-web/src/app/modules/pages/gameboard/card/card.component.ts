@@ -31,9 +31,15 @@ export class CardComponent implements OnInit {
   public async onSelect(): Promise<void> {
     if(!this.cardService.isSelectable) return;
 
-    this.cardService.select(this.card);
+    //this.cardService.select(this.card);
 
     const currentState = this.state;
+
+    if(currentState === InteractionState.SelectPin || currentState === InteractionState.SelectTwoPinsForSwap) {
+      this.gameService.setInteractionState(InteractionState.SelectCardForMove);
+    }
+
+    this.cardService.select(this.card);
     
     if(currentState === InteractionState.SwapCardWithTeamMate) {
       const team = this.gameService.getTeamForPlayer(this.gameService.self.id);

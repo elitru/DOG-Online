@@ -7,7 +7,8 @@ export enum MessageTypeDTO {
     DealCards = 3,
     SwapCard = 4,
     UserTurn = 5,
-    MovePin = 6
+    MovePin = 6,
+    Win = 7
 };
 
 export class MessageTypeMapper {
@@ -33,6 +34,9 @@ export class MessageTypeMapper {
 
             case MessageTypeDTO.MovePin:
                 return MessageType.MovePin;
+
+            case MessageTypeDTO.Win:
+                return MessageType.Win;
 
             default:
                 throw new Error('Invalid Message Type');

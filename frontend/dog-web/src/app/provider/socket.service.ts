@@ -11,11 +11,13 @@ import { SwapCardMessageDTO } from '../models/websockets/dto/swap-card-message.d
 import { UserTeamChangeMessageDTO } from '../models/websockets/dto/user-team-change-message.dto';
 import { UserTurnMessageDTO } from '../models/websockets/dto/user-turn-message.dto';
 import { UserUpdateMessageDTO } from '../models/websockets/dto/user-update-message.dto';
+import { WinMessageDTO } from '../models/websockets/dto/win-message.dto';
 import { MovePinMessage } from '../models/websockets/move-pin-message';
 import { StateChangedMessage } from '../models/websockets/state-changed-message';
 import { SwapCardMessage } from '../models/websockets/swap-card-message';
 import { UserTeamChangeMessage } from '../models/websockets/user-team-change-message';
 import { UserUpdateMessage } from '../models/websockets/user-update-message';
+import { WinMessage } from '../models/websockets/win-message';
 
 @Injectable({
   providedIn: 'root'
@@ -31,6 +33,7 @@ export class SocketService {
   public swapCards$: BehaviorSubject<SwapCardMessage> = new BehaviorSubject<SwapCardMessage>(null);
   public userTurn$: BehaviorSubject<UserTurnMessage> = new BehaviorSubject<UserTurnMessage>(null);
   public movePin$: BehaviorSubject<MovePinMessage> = new BehaviorSubject<MovePinMessage>(null);
+  public win$: BehaviorSubject<WinMessage> = new BehaviorSubject<WinMessage>(null);
 
   constructor() { }
 
@@ -86,6 +89,15 @@ export class SocketService {
         {
           const message: MovePinMessage = MovePinMessage.fromApi(wsData as MovePinMessageDTO);
           this.movePin$.next(message);
+          break;
+        }
+
+      case MessageTypeDTO.MovePin:
+        {
+          const message: WinMessage = WinMessage.fromApi(wsData as WinMessageDTO);
+          console.log('win');
+          console.log(message);
+          this.win$.next(message);
           break;
         }
     }

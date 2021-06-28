@@ -5,5 +5,6 @@ export enum MessageType {
     DealCards = 3,
     SwapCard = 4,
     UserTurn = 5,
-    MovePin = 6
+    MovePin = 6,
+    Win = 7
 };

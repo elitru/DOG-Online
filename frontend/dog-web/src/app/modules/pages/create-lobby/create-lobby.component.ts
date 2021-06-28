@@ -1,5 +1,6 @@
 import { Component, OnInit } from '@angular/core';
 import { Router } from '@angular/router';
+import { DialogService } from 'src/app/provider/dialog.service';
 import { GameService } from 'src/app/provider/game.service';
 import { LoaderService } from 'src/app/provider/loader.service';
 import { SocketService } from 'src/app/provider/socket.service';
@@ -18,6 +19,7 @@ export class CreateLobbyComponent implements OnInit {
   constructor(public loaderService: LoaderService,
               private gameService: GameService,
               private socketService: SocketService,
+              private dialogService: DialogService,
               private router: Router) { }
 
   public ngOnInit(): void {
@@ -35,7 +37,7 @@ export class CreateLobbyComponent implements OnInit {
       this.router.navigateByUrl('/lobby');
     }catch(err) {
       console.log('err -> ' + JSON.stringify(err));
-      alert('An error occured')!
+      this.dialogService.show("Fehler", "Ein unerwarteter Fehler is aufgetreten.");
     }
     this.loaderService.setLoading(false);
   }

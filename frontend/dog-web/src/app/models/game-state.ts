@@ -1,7 +1,8 @@
 export enum GameState {
     Lobby = 'Lobby',
     TeamAssignment = 'TeamAssignment',
-    Ingame = 'Ingame'
+    Ingame = 'Ingame',
+    Ended = 'Ended'
 }
 
 export enum InteractionState {

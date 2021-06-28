@@ -3,6 +3,7 @@ import { Router } from '@angular/router';
 import { CookieService } from 'ngx-cookie-service';
 import { BehaviorSubject } from 'rxjs';
 import { User } from 'src/app/models/http/user';
+import { DialogService } from 'src/app/provider/dialog.service';
 import { GameService } from 'src/app/provider/game.service';
 import { LoaderService } from 'src/app/provider/loader.service';
 
@@ -15,6 +16,7 @@ export class LobbyComponent implements OnInit {
 
   constructor(public gameService: GameService,
               private loaderService: LoaderService,
+              private dialogService: DialogService,
               private router: Router) { }
 
   public ngOnInit(): void {
@@ -30,7 +32,7 @@ export class LobbyComponent implements OnInit {
   }
 
   public get joinLink(): string {
-    return `${'http://192.168.43.75:4200'}/join/${this.sessionId}/${this.lobbyName}`;
+    return `${'http://localhost:4200'}/join/${this.sessionId}/${this.lobbyName}`;
   }
 
   public get canStart(): boolean {
@@ -58,7 +60,7 @@ export class LobbyComponent implements OnInit {
       await this.gameService.advanceState();
     }catch(err) {
       console.log(err);
-      alert('An error occured');
+      this.dialogService.show("Fehler", "Ein unerwarteter Fehler is aufgetreten.");
     }
 
     this.loaderService.setLoading(false);

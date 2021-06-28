@@ -1,5 +1,6 @@
 import { Component, HostListener, OnInit } from '@angular/core';
 import { Game } from 'src/app/models/http/game';
+import { GameService } from 'src/app/provider/game.service';
 
 @Component({
   selector: 'app-game-list',
@@ -10,12 +11,13 @@ export class GameListComponent implements OnInit {
 
   public search: boolean = false;
   public searchValue: string = '';
-  public games: Game[] = [
-    new Game('Lobby 1', 'test1', !true),
-    new Game('Lobby 2', 'test1', true)
-  ];
+  public games: Game[] = [];
 
-  constructor() { }
+  constructor(private gameSerivce: GameService) {
+    (async () => {
+      this.games = await this.gameSerivce.getGameList();
+    })();
+  }
 
   public get filteredGames(): Game[] {
     return this.games.filter(game => game.name.toLowerCase().includes(this.searchValue.toLowerCase()));
