@@ -53,15 +53,12 @@ export class GameboardComponent implements OnInit, AfterViewInit, OnDestroy {
     setTimeout(() => this.initRenderer(), 200);
   }
 
-  private async getMoves(pin: Pin): Promise<void> {
-    console.log('hrer - >' + this.cardService.selectedCard + ' | ' + this.isLoading);
-    
+  private async getMoves(pin: Pin): Promise<void> {    
     if(this.isLoading || !this.cardService.selectedCard) return;
 
     try {
       this.isLoading = true;
       const fieldIds = await this.gameService.getMoves(this.cardService.selectedCard.id, pin.pinId, this.cardService.jokerAction);
-      console.log(fieldIds);
       
       if(fieldIds.length === 0) {
         this.dialogService.show('Fehler', Messages.NO_MOVE_POSSIBLE);

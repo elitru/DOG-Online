@@ -77,8 +77,6 @@ export class SocketService {
 
       case MessageTypeDTO.UserTurn:
         {
-          console.log('turn');
-          console.log(wsData);
           const message: UserTurnMessage = AvailableCardMoves.fromApi(wsData as UserTurnMessageDTO);
           this.userTurn$.next(message);
           break;
@@ -86,7 +84,6 @@ export class SocketService {
 
       case MessageTypeDTO.MovePin:
         {
-          console.log(wsData)
           const message: MovePinMessage = MovePinMessage.fromApi(wsData as MovePinMessageDTO);
           this.movePin$.next(message);
           break;

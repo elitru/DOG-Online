@@ -8,6 +8,12 @@ import { MovePinMessage } from "../websockets/move-pin-message";
 import { CardType } from "./card-type";
 import { Pin, PinColor } from "./pin";
 
+export interface RenderQueueItem {
+    pin: Pin;
+    targetFieldId: number;
+    direction: 'forward' | 'backward';
+}
+
 export class GameBoardRenderer {
     private static eventSet: (event: MouseEvent) => void | null = null;
 
@@ -23,6 +29,7 @@ export class GameBoardRenderer {
     public swapPin: Pin;
     public possibleMoves: number[] = [];
     public pinForMove: Pin;
+    public renderQueue: RenderQueueItem[] = [];
 
     private isRequesting: boolean = false;
 
@@ -65,7 +72,7 @@ export class GameBoardRenderer {
         setTimeout(() => {
             //this.movePinOnBoard(this.pins[0], 20, 'forward');
             //this.movePinToTarget(this.pins[0], -107, 'forward');
-            //this.movePinToHome(this.pins[0]);
+            //this.movePinToHome(this.pins[0], -1);
             //this.movePinFromHomeToStart(this.pins[0])
         }, 1000);
 
@@ -99,8 +106,7 @@ export class GameBoardRenderer {
         this.initFields();
     }
 
-    private async makeMove(pin: Pin, targetField: number): Promise<void> {
-        console.log('this is pin -> ' + JSON.stringify(pin));
+    private async makeMove(pin: Pin, targetField: number): Promise<void> {        
         if(!pin) return;
         
         this.actions = [];
@@ -115,30 +121,27 @@ export class GameBoardRenderer {
             case CardType.Nine:
             case CardType.Ten:
             case CardType.Twelve:
+            case CardType.StartEleven:
+            case CardType.StartThirteen:
+            case CardType.PM_Four:
                 await this.gameService.makeSimpleMove(this.cardService.selectedCard.id, pin.pinId, targetField, this.cardService.jokerAction);
                 break;
         }
     }
 
-    private onMovePin(message: MovePinMessage): void {
+    private async onMovePin(message: MovePinMessage): Promise<void> {
         if(!message) return;
 
         const { pinId, targetFieldId, direction } = message;
         const pin = this.pins.find(p => p.pinId === pinId);
-        
+
         if(pin.fieldId < 0 && pin.fieldId >= -16) {
-            console.log('1');
             this.movePinFromHomeToStart(pin);
         }else if(targetFieldId > 0) {
-            console.log('moving now');
-            console.log(pin);
-            console.log(message);
             this.movePinOnBoard(pin, targetFieldId, direction);
         }else if(targetFieldId < 0 && targetFieldId >= -16) {
-            console.log('3');
-            this.movePinToHome(pin);
+            setTimeout(async () => await this.movePinToHome(pin, targetFieldId), 100)
         }else{
-            console.log('4');
             this.movePinToTarget(pin, targetFieldId, direction);
         }
     }
@@ -173,21 +176,22 @@ export class GameBoardRenderer {
         const pin = this.getPinForField(fieldId);
         
         const currentState = this.gameService.interactionState$.getValue();
-        console.log('curr field -> ' + fieldId);
+        /*console.log('curr field -> ' + fieldId);
         console.log('selected pin -> ' + pin);
         console.log(currentState);
         console.log('selected -> ' + this.selectedPin);
+        console.log(this.actions);
+        console.log(this.isRequesting);
+        console.log(this.pinForMove);*/
+        
 
         if(currentState === InteractionState.SelectMove) {
-            console.log('here0');
-            console.log(this.actions);
-            console.log(fieldId);
-            
+            //console.log(this.actions);
+            //console.log(fieldId);
+                        
             if(!this.actions.includes(fieldId)) return;
-            console.log('here1');
             if(this.isRequesting) return;
-            console.log('here2');
-            console.log('pin for move -> ' + this.pinForMove);
+            
             this.isRequesting = true;
             await this.makeMove(this.pinForMove, fieldId);
             this.isRequesting = false;
@@ -211,7 +215,7 @@ export class GameBoardRenderer {
 
         if(currentState === InteractionState.SelectPin && pin && this.isUserPin(pin.pinId) && !this.selectedPin) {
             this.selectedPin = pin;
-            console.log('fired...');
+            //console.log('fired...');
             this._selectedPin$.next(pin);
             return;
         }
@@ -233,6 +237,7 @@ export class GameBoardRenderer {
                     x: x + radius - 4,
                     y: y + radius + 17
                 });
+
             }
         });
     }
@@ -330,7 +335,7 @@ export class GameBoardRenderer {
 
         while(this.isPinOnField(firstFreeHomeField)) {            
             firstFreeHomeField--;
-        }
+        }        
 
         return firstFreeHomeField;
     }
@@ -352,11 +357,9 @@ export class GameBoardRenderer {
         }
     }
 
-    private async movePinToHome(pin: Pin): Promise<void> {
-        const firstFreeHomeField = this.getNextFreeHomeField(pin);
-        const coordinate = this.fields.get(firstFreeHomeField);
-        
-        await this.animateFromTo(pin, firstFreeHomeField, coordinate);
+    private async movePinToHome(pin: Pin, targetHomeFieldId: number): Promise<void> {
+        const coordinate = FieldUtils.getScaledFields(this.canvasSize).get(targetHomeFieldId);
+        await this.animateFromTo(pin, targetHomeFieldId, coordinate);
     }
 
     private async movePinOnBoard(pin: Pin, toFieldId: number, direction: 'forward' | 'backward'): Promise<void> {
@@ -378,8 +381,6 @@ export class GameBoardRenderer {
             await this.animateFromTo(pin, previousFieldId, previousCoords);
             await this.movePinOnBoard(pin, toFieldId, direction);
         }
-
-        console.log('moved --> ' + pin.fieldId + ' | ' + JSON.stringify(pin.coordinates));
     }
 
     public async movePinFromHomeToStart(pin: Pin): Promise<void>  {

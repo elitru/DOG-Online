@@ -28,6 +28,10 @@ export class SelectActionComponent implements OnInit {
     return this.cardService.jokerAction;
   }
 
+  public get canMove(): boolean {
+    return this.gameService.getPinsOnBoard().length > 0;
+  }
+
   public async onSelectAction(action: CardAction): Promise<void> {
     this.cardService.cardAction = action;
     

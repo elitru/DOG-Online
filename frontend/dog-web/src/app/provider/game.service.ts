@@ -74,7 +74,7 @@ export class GameService {
     this.socketService.swapCards$.subscribe(msg => this.onSwapCard(msg));
     this.socketService.userTurn$.subscribe(msg => this.onUserTurn(msg));
 
-    //this._pins.set('1', [new Pin('2', PinColor.BLUE, -8)])
+    //this._pins.set('1', [new Pin('2', PinColor.RED, 3)])
   }
 
   private onUserTurn(message: UserTurnMessage): void {
@@ -89,7 +89,6 @@ export class GameService {
   
       this._cards$.next(cards);
       this.setInteractionState(InteractionState.SelectCardForDrop);
-      
       return;
     }
 
@@ -254,22 +253,6 @@ export class GameService {
     });
   }
 
-  public get isOwnPinOnStartField(): boolean {
-    const pins = this._pins.get(this.self.id);
-    const color = pins[0].color;
-
-    switch(color) {
-      case PinColor.RED:
-        return !pins.every(pin => pin.fieldId !== 1);
-      case PinColor.BLUE:
-        return !pins.every(pin => pin.fieldId !== 15);
-      case PinColor.GREEN:
-        return !pins.every(pin => pin.fieldId !== 29);
-      case PinColor.YELLOW:
-        return !pins.every(pin => pin.fieldId !== 43);
-    }
-  }
-
   public getTeamById(teamId: number): Team {
     return this._teams$.getValue().find(t => t.id === teamId) || null;
   }
@@ -304,8 +287,29 @@ export class GameService {
     return this.pins.get(this.self.id).filter(pin => pin.fieldId < 0 && pin.fieldId >= -16)
   }
 
+  public getPinsOnBoard(): Pin[] {
+    return this.pins.get(this.self.id).filter(p => p.fieldId > 0);
+  }
+
+  public get isHomeFieldOccupiedBySelf(): boolean {
+    const pins = this.pins.get(this.self.id);
+
+    switch(pins[0].color) {
+      case PinColor.RED:
+        return pins.some(pin => pin.fieldId === 1);
+      case PinColor.BLUE:
+        return pins.some(pin => pin.fieldId === 15);
+      case PinColor.GREEN:
+        return pins.some(pin => pin.fieldId === 29);
+      case PinColor.YELLOW:
+        return pins.some(pin => pin.fieldId === 43);
+    }
+
+    return false;
+  }
+
   public get canStart(): boolean {
-    return this.getPinsOnHomeFields().length > 0;
+    return this.getPinsOnHomeFields().length > 0 && !this.isHomeFieldOccupiedBySelf;
   }
 
   private resetCardsAvailable(state: boolean = false): void {
@@ -375,6 +379,8 @@ export class GameService {
   }
 
   public async makeSimpleMove(cardId: string, pinId: string, fieldId: number, jokerAction?: CardType): Promise<void> {
+    this.loaderService.setLoading(true);
+
     const request: PlayCardRequest<string> = {
       cardId: cardId,
       pinId: pinId,
@@ -397,6 +403,8 @@ export class GameService {
     }
 
     await this.playCard<string, void>(ApiRoutes.Game.MakeMove, request);
+    this.loaderService.setLoading(false);
+    
     this.resetCardsAvailable();
   }
 
@@ -433,7 +441,7 @@ export class GameService {
       cardId: card.id,
       pinId: this.getPinsOnHomeFields()[0].pinId,
       payload: JSON.stringify({
-        action: -1
+        moveToBoard: true
       })
     };
 
@@ -441,7 +449,7 @@ export class GameService {
       request.payload = JSON.stringify({
         cardPayload: JSON.stringify(
           {
-            action: -1
+            moveToBoard: true
           }
         ),
         cardType: CardType.StartEleven
@@ -464,6 +472,8 @@ export class GameService {
   }
 
   public async getMoves(cardId: string, pinId: string, jokerAction?: CardType): Promise<number[]> {
+    this.loaderService.setLoading(true);
+
     const request: any = {
       pinId,
       cardId
@@ -475,7 +485,9 @@ export class GameService {
       }
     }
 
-    return (await this.httpClient.post<{ positions: number[] }>(ApiRoutes.Game.GetMoves, request, { headers: this.headers }).toPromise()).positions;
+    const result = (await this.httpClient.post<{ positions: number[] }>(ApiRoutes.Game.GetMoves, request, { headers: this.headers }).toPromise()).positions;
+    this.loaderService.setLoading(false);
+    return result;
   }
 
   private async playCard<T, R>(route: string, request: PlayCardRequest<T>): Promise<R> {

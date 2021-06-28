@@ -8,7 +8,7 @@ export class AvailableCardMoves {
     }
 
     public get canMakeMove(): boolean {
-        return !Array.from(this.cardMoves.values()).every(({length}) => length === 0);
+        return Array.from(this.cardMoves.values()).some(({length}) => length > 0) && this.cardMoves.size > 0;
     }
 
     public static fromApi({ cardMoves }: AvailableCardMovesDTO): AvailableCardMoves {
