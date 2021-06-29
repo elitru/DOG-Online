@@ -32,7 +32,7 @@ public abstract class IngameSubState {
     }
 
     public int getAmountOfCardsPerRound() {
-        return 0;
+        throw new RuntimeException("Not yet implemented....");
     }
 
 }

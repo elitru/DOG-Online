@@ -9,9 +9,11 @@ import com.tl.models.application.game.field.StartField;
 import com.tl.models.application.game.sub_states.DealCardsSubState;
 import com.tl.models.application.game.sub_states.IngameSubState;
 import com.tl.models.application.game.sub_states.SwapCardsSubState;
+import com.tl.models.application.game.ws_messages.messages.AnnounceWinnerMessage;
 import com.tl.models.application.user.SessionUser;
 import com.tl.models.client.requests.DropCardRequest;
 import com.tl.models.client.requests.PlayCardRequest;
+import com.tl.resources.GameSocketResource;
 import lombok.*;
 
 import javax.ws.rs.BadRequestException;
@@ -144,16 +146,22 @@ public class Game {
             var loc = this.getNextFreeHomeFieldForUser(removedUser);
             p.setCurrentLocation(loc);
 
-            System.out.printf("[REMOVE] Sending player %s from %d to %d\n", removedUser.getUsername(), previousLocation, loc.getNodeId());
-
             p.broadcastMovement(context, previousLocation);
         });
 
         // remove card
         this.removeCardForPlayer(user, card.getCardId());
-        // announce next player or swap
-        var p = this.getNextUser(user);
-        this.announceNextOrSwapState(context, p);
+
+        // check for winner, else announce new player / swap
+        var winner = this.hasAnyTeamWon();
+        if (winner.isPresent()) {
+            // send out win message
+            GameSocketResource.makeGameBroadcast(context, new AnnounceWinnerMessage(winner.get()));
+        } else {
+            // announce next player or swap
+            var p = this.getNextUser(user);
+            this.announceNextOrSwapState(context, p);
+        }
     }
 
     private BaseField getNextFreeHomeFieldForUser(SessionUser user) {
@@ -199,28 +207,48 @@ public class Game {
             // there are still cards to be played --> just announce the next player
             this.getState().announcePlayerIsToPlay(p);
         } else {
+            System.out.println("Starting new round");
             // no cards left --> switch to new state (deal the cards again)
-            this.setState(new DealCardsSubState(
-                    context,
-                    this.getState().getAmountOfCardsPerRound() == 1 ? 6 : this.getState().getAmountOfCardsPerRound() - 1)
-            );
+            var newAmount = this.getState().getAmountOfCardsPerRound() == 1 ? DealCardsSubState.START_WITH : this.getState().getAmountOfCardsPerRound() - 1;
+            System.out.println("New amount: " + newAmount);
+            // set new state
+            this.setState(new DealCardsSubState(context, newAmount));
             // then --> swap cards
-            this.setState(new SwapCardsSubState(context, p));
+            this.setState(new SwapCardsSubState(context, p, newAmount));
         }
     }
 
     private SessionUser getNextUser(SessionUser s) {
         List<SessionUser> all = new ArrayList<>();
 
+        // add all players
         all.add(this.teams.get(1).getMembers().get(0));
         all.add(this.teams.get(2).getMembers().get(0));
         all.add(this.teams.get(1).getMembers().get(1));
         all.add(this.teams.get(2).getMembers().get(1));
 
+        // remove the players who've got all the pins in their target fields
+        all.removeIf(this::isUserFinished);
+
+        // get the next player
         int index = all.indexOf(s);
-        int nextIndex = (index + 1) % 4;
+        int nextIndex = (index + 1) % all.size();
 
         return all.get(nextIndex);
+    }
+
+    private boolean isUserFinished(SessionUser user) {
+        return this.ninepins.get(user).stream().allMatch(NinePin::isOnTargetField);
+    }
+
+    private Optional<Integer> hasAnyTeamWon() {
+        for (Team t : this.teams.values()) {
+            var m = t.getMembers();
+            if (m.stream().allMatch(this::isUserFinished) && t.getTeamId() != 0) {
+                return Optional.of(t.getTeamId());
+            }
+        }
+        return Optional.empty();
     }
 
 
@@ -291,25 +319,54 @@ public class Game {
             }});
         }
 
-        for (int i = currentField.getNodeId() + 1; i <= currentField.getNodeId() + amount; i++) {
-            int index = this.getRealIndex(i);
-            path.add(index);
+        var onTargetField = currentField.getNodeId() < 0;
+
+        if (onTargetField) {
+            List<Integer> all = new ArrayList<>();
+            var free = true;
+            for (int i = 0; i < amount; i++) {
+                if (this.isFieldOccupiedByPin(currentField)) {
+                    free = false;
+                    break;
+                }
+
+                if (currentField.getNext().isPresent()) {
+                    currentField = currentField.getNext().get();
+                }
+            }
+
+            // check if not occupied
+            if (free) {
+                // not occupied --> add target field as well
+                all.add(this.getRealIndex(currentField.getNodeId() - amount + 1));
+            }
+
+            return all;
+        } else {
+            for (int i = this.getRealIndex(currentField.getNodeId() + 1); i <= currentField.getNodeId() + amount; i++) {
+                int index = this.getRealIndex(i);
+                path.add(index);
+            }
         }
+
 
         System.out.println("Walking on path: " + Arrays.toString(path.toArray()));
 
         // first, check if we're traversing a start field
         var start = path.stream().filter(integer -> Arrays.stream(GameBoard.START_FIELDS).anyMatch(integer::equals)).findFirst();
 
-        System.out.println("Found start field? " + start.isPresent());
-
+        BaseField finalCurrentField = currentField;
+        BaseField finalCurrentField1 = currentField;
         return start.map(fieldId -> {
+            System.out.println("Found start field with id of  " + fieldId);
+
             List<Integer> all = new ArrayList<>();
             StartField field = this.board.getCircleFieldById(fieldId);
 
             // start field is not occupied by pin of the same color --> add the end field
             if (!this.isStartFieldOccupiedByPlayerOfSameColor(field)) {
-                all.add(this.getRealIndex(currentField.getNodeId() + amount));
+                System.out.println("Transgressing start field because it is not occupied!");
+                all.add(this.getRealIndex(finalCurrentField.getNodeId() + amount));
             }
 
             // now: check if the player would be able to move his pin towards the goal
@@ -320,15 +377,16 @@ public class Game {
                 // in the path list (and therefore not in the search results)
                 // get the index of the start field within the path list to calculate the remaining fields after it
                 int indexWithinPath = path.indexOf(fieldId);
-                int remainingFields = path.size() - (indexWithinPath + 1);
+                int remainingFields = path.size() - indexWithinPath - 1;
+                System.out.println("Found start field! Remaining: " + remainingFields);
 
                 // make sure that we don't have more points than necessary
-                if (remainingFields > 4) {
+                if (remainingFields > 4 || remainingFields == 0) {
                     break OUTER;
                 }
 
                 // check whether there are enough free fields left; stop at the first sight of a occupied field
-                var curr = field.getFirstTargetField();
+                BaseField curr = field.getFirstTargetField();
                 var free = true;
 
                 for (int i = 0; i < remainingFields; i++) {
@@ -336,17 +394,25 @@ public class Game {
                         free = false;
                         break;
                     }
+
+                    if (curr.getNext().isPresent()) {
+                        curr = curr.getNext().get();
+                    }
                 }
+
+                System.out.println("Is the target free? " + free);
 
                 // check if not occupied
                 if (free) {
+                    System.out.println("Target is free! Adding " + this.getRealIndex(field.getFirstTargetField().getNodeId() - remainingFields + 1));
                     // not occupied --> add target field as well
-                    all.add(this.getRealIndex(field.getFirstTargetField().getNodeId() - remainingFields));
+                    all.add(this.getRealIndex(field.getFirstTargetField().getNodeId() - remainingFields + 1));
                 }
             }
+            System.out.println("Found possibilities: "  + Arrays.toString(all.toArray()));
             return all;
         }).orElse(new ArrayList<>() {{
-            add(getRealIndex(currentField.getNodeId() + amount));
+            add(getRealIndex(finalCurrentField1.getNodeId() + amount));
         }});
 
     }
@@ -366,7 +432,7 @@ public class Game {
         for (Map.Entry<SessionUser, List<NinePin>> pin : this.ninepins.entrySet()) {
             for (NinePin p : pin.getValue()) {
                 // if the location of the pin is the field you search for
-                if (p.getCurrentLocation().equals(field)) {
+                if (p.getCurrentLocation().getNodeId() == field.getNodeId()) {
                     return true;
                 }
             }

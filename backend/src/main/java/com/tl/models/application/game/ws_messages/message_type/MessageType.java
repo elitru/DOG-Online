@@ -7,7 +7,9 @@ public enum MessageType {
     DealCards(3),
     SwapCard(4),
     AskToPlay(5),
-    MovePin(6);
+    MovePin(6),
+    AnnounceWinner(7),
+    FinishGame(8);
 
     private final int id;
 

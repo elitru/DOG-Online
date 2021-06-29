@@ -18,9 +18,12 @@ public class SwapCardsSubState extends IngameSubState {
 
     private SessionUser startPlayer;
 
-    public SwapCardsSubState(GameSessionContext ctx, SessionUser startPlayer) {
+    private int amountCards;
+
+    public SwapCardsSubState(GameSessionContext ctx, SessionUser startPlayer, int amountCards) {
         super(ctx);
         this.startPlayer = startPlayer;
+        this.amountCards = amountCards;
     }
 
     private boolean isSwapValid(UUID fromPlayer, UUID toPlayer, UUID cardId) {
@@ -48,7 +51,7 @@ public class SwapCardsSubState extends IngameSubState {
             // notify players of the cards they received
             this.sendBufferedCards();
             // notify the first player that he is now supposed to start
-            this.context.getGame().setState(new PlayRoundSubState(context, this.startPlayer, 6));
+            this.context.getGame().setState(new PlayRoundSubState(context, this.startPlayer, amountCards));
         }
     }
 
@@ -61,5 +64,10 @@ public class SwapCardsSubState extends IngameSubState {
 
             this.context.getClients().get(entry.getKey().getId()).getWebsocketSession().getAsyncRemote().sendObject(new SwapCardMessage(entry.getValue()));
         }
+    }
+
+    @Override
+    public int getAmountOfCardsPerRound() {
+        return this.amountCards;
     }
 }

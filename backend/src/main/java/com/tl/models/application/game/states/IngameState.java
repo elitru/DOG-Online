@@ -8,6 +8,7 @@ import com.tl.models.application.game.sub_states.DealCardsSubState;
 import com.tl.models.application.game.sub_states.PlayRoundSubState;
 import com.tl.models.application.game.sub_states.SwapCardsSubState;
 import com.tl.models.application.game.ws_messages.messages.AskToPlayCardMessage;
+import com.tl.models.application.game.ws_messages.messages.FinishGameMessage;
 import com.tl.models.application.game.ws_messages.messages.StateChangedMessage;
 import com.tl.models.application.game.ws_messages.messages.state_data_models.IngameStatePayload;
 import com.tl.models.application.user.SessionUser;
@@ -29,10 +30,15 @@ public class IngameState extends GameState {
         this.sendWSInitMessage();
 
         // deal the first round of cards
-        this.context.getGame().setState(new DealCardsSubState(this.context, 6));
+        this.context.getGame().setState(new DealCardsSubState(this.context, DealCardsSubState.START_WITH));
         // notify the players that they've now got to swap their cards
         var p = this.getRandomPlayer();
-        this.context.getGame().setState(new SwapCardsSubState(context, p));
+        this.context.getGame().setState(new SwapCardsSubState(context, p, DealCardsSubState.START_WITH));
+    }
+
+    @Override
+    public void removeUserFromSession(UUID userId) {
+        GameSocketResource.makeGameBroadcast(this.context, new FinishGameMessage());
     }
 
     private SessionUser getRandomPlayer() {

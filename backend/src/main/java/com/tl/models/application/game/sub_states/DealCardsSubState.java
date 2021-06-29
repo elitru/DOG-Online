@@ -8,6 +8,9 @@ import com.tl.models.application.user.SessionUser;
 import java.util.stream.Collectors;
 
 public class DealCardsSubState extends IngameSubState {
+
+    public static final int START_WITH = 6;
+
     public DealCardsSubState(GameSessionContext context, int amount) {
         super(context);
         this.dealCards(amount);

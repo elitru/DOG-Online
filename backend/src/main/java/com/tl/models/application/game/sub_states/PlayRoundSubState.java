@@ -32,6 +32,9 @@ public class PlayRoundSubState extends IngameSubState {
      */
     public boolean registerCardPlayed() {
         this.amountPlayed++;
+        System.out.println("Amount played is " + this.amountPlayed);
+        System.out.println("Amount of cards per player: " + this.amountCards);
+        System.out.println("Amount required: " + this.amountCards * 4);
         if (this.amountPlayed == this.amountCards * 4) {
             // every player has played their amount of cards --> go to new state
             return true;

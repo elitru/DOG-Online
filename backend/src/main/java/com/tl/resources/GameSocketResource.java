@@ -36,7 +36,8 @@ public class GameSocketResource {
     SessionService sessionService;
 
     public static String getUrlForUserAndSession(UUID sessionId, UUID userId) {
-        return String.format("ws://192.168.43.108:8080/game/%s/%s", sessionId, userId);
+        //return String.format("ws://80.109.218.245:8080/game/%s/%s", sessionId, userId);
+        return String.format("ws://192.168.43.77:8080/game/%s/%s", sessionId, userId);
     }
 
     @OnOpen

@@ -8,6 +8,7 @@ import com.tl.models.application.game.states.TeamAssignmentState;
 import com.tl.models.application.user.SessionUser;
 import com.tl.models.client.requests.CreateSessionRequest;
 import com.tl.models.client.requests.JoinSessionRequest;
+import com.tl.models.client.responses.ResponseSession;
 import io.quarkus.security.UnauthorizedException;
 import org.jboss.resteasy.spi.NotImplementedYetException;
 
@@ -15,23 +16,29 @@ import javax.enterprise.context.ApplicationScoped;
 import javax.inject.Inject;
 import javax.ws.rs.BadRequestException;
 import javax.ws.rs.NotFoundException;
-import java.util.HashMap;
-import java.util.Map;
-import java.util.Optional;
-import java.util.UUID;
+import java.util.*;
+import java.util.concurrent.ConcurrentHashMap;
+import java.util.stream.Collectors;
 
 @ApplicationScoped
 public class SessionService {
 
-    Map<UUID, GameSessionContext> sessions;
+    ConcurrentHashMap<UUID, GameSessionContext> sessions;
 
     @Inject
     void initMap() {
-        this.sessions = new HashMap<>();
+        this.sessions = new ConcurrentHashMap<>();
     }
 
     public GameSessionContext getSessionOrThrow(UUID sessionId) {
         return Optional.ofNullable(this.sessions.get(sessionId)).orElseThrow(BadRequestException::new);
+    }
+
+    public List<ResponseSession> toResponse() {
+        return this.sessions.entrySet().stream()
+                .filter(e -> e.getValue().isPublicSession())
+                .map(e -> new ResponseSession(e.getKey(), e.getValue().getSessionName(), !e.getValue().getPassword().isEmpty()))
+                .collect(Collectors.toList());
     }
 
     public GameSessionContext createSession(CreateSessionRequest request) {
@@ -103,8 +110,7 @@ public class SessionService {
             ((TeamAssignmentState) state).finish();
             context.setState(new IngameState(context), false);
         } else {
-            // TODO implement switch to other states
-            throw new NotImplementedYetException();
+            throw new BadRequestException("Requested invalid advancement of state!");
         }
     }
 }

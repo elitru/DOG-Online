@@ -13,7 +13,7 @@ import java.util.*;
 public class GameBoard {
     private static final int NODES_BETWEEN = 13;
     public static final int RING_NODES = (NODES_BETWEEN + 1) * 4;
-    public static final int[] START_FIELDS = {1 + (RING_NODES * 0), 1 + (RING_NODES * 1), 1 + (RING_NODES * 2), 1 + (RING_NODES * 3)};
+    public static final int[] START_FIELDS = {1, 15, 29, 43};
     private Map<Integer, Team> teams;
     private BaseField reference;
 
