@@ -7,7 +7,7 @@ export class SoundService {
   private audio?: HTMLAudioElement;
 
   constructor() {
-    //this.init();
+    this.init();
   }
 
   private init(): void {

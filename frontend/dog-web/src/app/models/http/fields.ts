@@ -115,7 +115,7 @@ export class FieldUtils {
 
         // Target Field BLUE
         nodeCoordinateEntry(-105, 1105, 592),
-        nodeCoordinateEntry(-106, 1105, 592),
+        nodeCoordinateEntry(-106, 1014, 592),
         nodeCoordinateEntry(-107, 923, 592),
         nodeCoordinateEntry(-108, 832, 592),
 
@@ -126,7 +126,7 @@ export class FieldUtils {
         nodeCoordinateEntry(-112, 618, 800),
 
         // Target Field Yellow
-        nodeCoordinateEntry(-112, 136, 592),
+        nodeCoordinateEntry(-113, 136, 592),
         nodeCoordinateEntry(-114, 226, 592),
         nodeCoordinateEntry(-115, 318, 592),
         nodeCoordinateEntry(-116, 409, 592),

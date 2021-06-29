@@ -1,5 +1,5 @@
 export class ApiRoutes {
-    private static readonly BasePath = "http://80.109.218.245:8080/api";
+    private static readonly BasePath = "http://192.168.43.77:8080/api";
     
     public static readonly Session = class {
         public static readonly Base: string = "sessions";

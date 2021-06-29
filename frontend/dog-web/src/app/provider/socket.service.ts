@@ -34,6 +34,7 @@ export class SocketService {
   public userTurn$: BehaviorSubject<UserTurnMessage> = new BehaviorSubject<UserTurnMessage>(null);
   public movePin$: BehaviorSubject<MovePinMessage> = new BehaviorSubject<MovePinMessage>(null);
   public win$: BehaviorSubject<WinMessage> = new BehaviorSubject<WinMessage>(null);
+  public cancel$: BehaviorSubject<boolean> = new BehaviorSubject<boolean>(false);
 
   constructor() { }
 
@@ -100,6 +101,10 @@ export class SocketService {
           this.win$.next(message);
           break;
         }
+
+      case MessageTypeDTO.Cancel:
+        this.cancel$.next(true);
+        break;
     }
   }
 

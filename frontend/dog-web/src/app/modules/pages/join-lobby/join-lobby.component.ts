@@ -1,5 +1,6 @@
 import { Component, OnInit } from '@angular/core';
 import { ActivatedRoute, Router } from '@angular/router';
+import { DialogService } from 'src/app/provider/dialog.service';
 import { GameService } from 'src/app/provider/game.service';
 import { LoaderService } from 'src/app/provider/loader.service';
 import { SocketService } from 'src/app/provider/socket.service';
@@ -18,6 +19,7 @@ export class JoinLobbyComponent implements OnInit {
   constructor(private loaderService: LoaderService,
               private router: Router,
               private socketService: SocketService,
+              private dialogService: DialogService,
               private gameService: GameService,
               private route: ActivatedRoute) {
     this.loaderService.setLoading(true);
@@ -55,7 +57,7 @@ export class JoinLobbyComponent implements OnInit {
       this.router.navigateByUrl('/lobby');
     }catch(err) {
       console.log(err);
-      alert('An errors occured');
+      this.dialogService.show('Fehler', 'Ungültiges Passwort oder doppelter Username...');
     }
 
     this.loaderService.setLoading(false);

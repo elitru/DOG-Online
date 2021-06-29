@@ -78,6 +78,13 @@ export class GameService {
     this.socketService.swapCards$.subscribe(msg => this.onSwapCard(msg));
     this.socketService.userTurn$.subscribe(msg => this.onUserTurn(msg));
     this.socketService.win$.subscribe(msg => this.onWin(msg));
+    this.socketService.cancel$.subscribe((msg) => {
+      if(!msg || this._gameState$.getValue() === GameState.Ended) return;
+
+      this._gameState$.next(GameState.Ended);
+      this.router.navigateByUrl('/create');
+      this.dialogService.show('Spielabbruch', 'Das Spiel wurde vorzeitig abgebrochen.')
+    });
 
     //this._pins.set('1', [new Pin('2', PinColor.RED, 3)])
   }

@@ -69,6 +69,8 @@ export class GameBoardRenderer {
 
         this.initFields();
 
+        //this.setActionField(-116);
+
         setTimeout(() => {
             //this.movePinOnBoard(this.pins[0], 20, 'forward');
             //this.movePinToTarget(this.pins[0], -107, 'forward');
@@ -481,8 +483,8 @@ export class GameBoardRenderer {
 
     private renderActionsOnField(fieldId: number, justRender: boolean = false, withImage: boolean = true): void {
         const radius = FieldUtils.getActionRadius(fieldId, this.canvasSize);
-        const { x, y } = this.fields.get(fieldId);
-
+        const { x, y } = FieldUtils.getScaledFields(this.canvasSize).get(fieldId);
+        
         this.ctx.fillStyle = '#da7000';
         this.ctx.strokeStyle = '#fff';
         this.ctx.lineWidth = 10;
@@ -506,7 +508,7 @@ export class GameBoardRenderer {
         if(!withImage) return;
 
         if(FieldUtils.isTargetField(fieldId)) {
-            this.ctx.fillText('👑', x + radius - 11, y + radius * 2 + 10);
+            this.ctx.fillText('👑', x + radius - 5, y + radius * 2 + 10);
         }else{
             if(FieldUtils.isStartField(fieldId)) {
                 this.ctx.fillText('📍', x + radius - 12, y + radius + 25);

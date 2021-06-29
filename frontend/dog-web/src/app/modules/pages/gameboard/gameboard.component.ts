@@ -67,6 +67,10 @@ export class GameboardComponent implements OnInit, AfterViewInit, OnDestroy {
         return;
       }
 
+      console.log('fields');
+      
+      console.log(fieldIds);
+
       this.renderer.possibleMoves = fieldIds;
       this.renderer.pinForMove = pin;
       

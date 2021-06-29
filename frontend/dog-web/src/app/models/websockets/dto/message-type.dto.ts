@@ -8,7 +8,8 @@ export enum MessageTypeDTO {
     SwapCard = 4,
     UserTurn = 5,
     MovePin = 6,
-    Win = 7
+    Win = 7,
+    Cancel = 8
 };
 
 export class MessageTypeMapper {
